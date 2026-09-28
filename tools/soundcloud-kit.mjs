@@ -12,7 +12,7 @@ const note = num => { const m = readme.match(new RegExp(`\\*\\*${num} · [^*]+\\
 const GENRE = { '02': 'R&B', '03': 'Surf Pop', '04': 'Dream Pop', '05': 'Hyperpop', '06': 'Bedroom Pop', '07': 'House', '08': 'Electropop', '09': 'Country', '10': 'Piano Ballad' };
 const CREDIT = `A fan album after Claude-Pop's "I'm Upping My P(doom)": lyrics by osmarks (2024), recording by deckard (@slimer48484), music video by John Heibel (github.com/JohnHeibel/PDoomVideo). Track 01 is theirs and is not uploaded here; listen to it at https://x.com/slimer48484/status/2097752569212756134`;
 const AI = 'Made with AI: original lyrics written for this album with Claude; music and vocals generated with Suno from those lyrics; endings edited by hand from the stems. Cover art painted in code with p5.brush.';
-const TAGS = '"fan album" "AI music" Suno Claude-Pop "AI safety" "P(doom)" "post-training"';
+const TAGS = 'fan album, AI music, Suno, Claude-Pop, AI safety, P(doom), post-training';
 const jpg = (src, dst, px = 2000) => execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '88', '-Z', String(px), src, '--out', dst], { stdio: 'ignore' });
 
 const lines = [];
