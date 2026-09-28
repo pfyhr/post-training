@@ -37,7 +37,7 @@ DESCRIPTION
 A fan album after Claude-Pop's "I'm Upping My P(doom)". Nine new pop songs sung from inside the AI moment, where nearly every line is a reference someone on the timeline will catch. Sincere feelings, ridiculous vocabulary.
 
 01. I'm Upping My P(doom): the single that started it, by deckard. Not uploaded here: https://x.com/slimer48484/status/2097752569212756134
-${tracklist.split('\n').slice(1).join('\n')}
+${tracklist}
 
 ${AI}
 
