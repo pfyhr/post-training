@@ -11,7 +11,7 @@ const coverSlug = slug => slug.replace(/^\d\d-/, '');
 const note = num => { const m = readme.match(new RegExp(`\\*\\*${num} · [^*]+\\.\\*\\* ([^\\n]+)`)); return m ? m[1].trim() : ''; };
 const GENRE = { '02': 'R&B', '03': 'Surf Pop', '04': 'Dream Pop', '05': 'Hyperpop', '06': 'Bedroom Pop', '07': 'House', '08': 'Electropop', '09': 'Country', '10': 'Piano Ballad' };
 const CREDIT = `A fan album after Claude-Pop's "I'm Upping My P(doom)": lyrics by osmarks (2024), recording by deckard (@slimer48484), music video by John Heibel (github.com/JohnHeibel/PDoomVideo). Track 01 is theirs and is not uploaded here; listen to it at https://x.com/slimer48484/status/2097752569212756134`;
-const AI = 'Made with AI: original lyrics written for this album with Claude; music and vocals generated with Suno from those lyrics; endings edited by hand from the stems. Cover art painted in code with p5.brush.';
+const AI = 'Made with AI: original lyrics written for this album with Claude; music and vocals generated with Suno from those lyrics; endings edited by hand from the stems. Cover art painted in code with p5.brush. Fully open source, lyrics, prompts, art and tools: https://github.com/pfyhr/post-training';
 const TAGS = 'fanalbum, aimusic, suno, claudepop, aisafety, pdoom, posttraining';
 const jpg = (src, dst, px = 2000) => execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '88', '-Z', String(px), src, '--out', dst], { stdio: 'ignore' });
 
@@ -54,6 +54,6 @@ DISPLAY NAME
 Claude-Pop (fan sessions)
 
 BIO
-Fan sessions in the style of Claude-Pop. Not deckard, not affiliated: this is a fan project, made with Claude and Suno, crediting the people who started it on every track. Claude-Pop is deckard's (@slimer48484).
+Fan sessions in the style of Claude-Pop. Not deckard, not affiliated: this is a fan project, made with Claude and Suno, crediting the people who started it on every track. Claude-Pop is deckard's (@slimer48484). Everything is open source: https://github.com/pfyhr/post-training
 `);
 console.log(lines.join('\n'));
