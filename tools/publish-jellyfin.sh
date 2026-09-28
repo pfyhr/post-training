@@ -1,7 +1,7 @@
 #!/bin/sh
 # tools/publish-jellyfin.sh: tag the finished takes and copy them into the Jellyfin music library on diskdatorn.
 # Track 01 is deckard's single, taken from the existing file on the share and re-tagged with full credits.
-# Tracks 02-10 come from audio/NN-slug.m4a (audio/NN-slug-final.m4a wins if present), with the Suno cover embedded.
+# Tracks 02-10: audio/masters/NN-slug.wav (lossless, from Suno WAV or WAV stems) wins, then audio/NN-slug-final.m4a, then audio/NN-slug.m4a.
 set -e
 LIB="${LIB:-/Volumes/st3raid/music}"
 ALBUM_ARTIST="Claude-Pop (fan sessions)"; ALBUM="Post-Training"; YEAR=2026; TOTAL=10
@@ -27,7 +27,7 @@ node -e '
 const a = require("./album.json");
 for (const t of a.tracks) console.log(t.num + "\t" + t.slug + "\t" + t.title);' |
 while IFS="$(printf '\t')" read -r n slug title; do
-  src=""; for c in "audio/$slug-final.m4a" "audio/$slug.m4a"; do [ -f "$c" ] && { src=$c; break; }; done
+  src=""; for c in "audio/masters/$slug.wav" "audio/$slug-final.m4a" "audio/$slug.m4a"; do [ -f "$c" ] && { src=$c; break; }; done
   [ -n "$src" ] || continue
   safe=$(printf '%s' "$title" | tr '/:' '--')
   tag "$src" "audio/$slug.jpeg" "$n" "$ALBUM_ARTIST" "$title" "$CRED" "$DEST/$n. $ALBUM_ARTIST - $safe.flac"

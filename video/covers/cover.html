@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Post-Training covers</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Shantell+Sans:wght@800&display=block">
+<style>html,body{margin:0;background:#1b1820} #out{width:900px;height:900px} .p5Canvas{display:none!important}</style>
+<script src="../engine/node_modules/p5/lib/p5.min.js"></script>
+<script src="../engine/node_modules/p5.brush/dist/p5.brush.js"></script>
+</head><body>
+<canvas id="out" width="3000" height="3000"></canvas>
+<script>
+// Reuse the video engine's painting core unchanged, except: square 3000 px canvas, brushes scaled to match.
+const SIZE = 3000;
+const req = new XMLHttpRequest(); req.open('GET', '../engine/src/core.js', false); req.send();
+const src = req.responseText
+  .replace('const W = 1920, H = 1080;', `const W = ${SIZE}, H = ${SIZE};`)
+  .replace('brush.scaleBrushes(5)', `brush.scaleBrushes(${(5 * SIZE / 1080).toFixed(2)})`);
+const s = document.createElement('script'); s.textContent = src; document.body.appendChild(s);
+var METER_SHOWN = false; function drawKaraokeText() {} function devUI() {}
+</script>
+<script src="covers.js"></script>
+</body></html>
