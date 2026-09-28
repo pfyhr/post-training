@@ -30,7 +30,8 @@ while IFS="$(printf '\t')" read -r n slug title; do
   src=""; for c in "audio/masters/$slug.wav" "audio/$slug-final.m4a" "audio/$slug.m4a"; do [ -f "$c" ] && { src=$c; break; }; done
   [ -n "$src" ] || continue
   safe=$(printf '%s' "$title" | tr '/:' '--')
-  tag "$src" "audio/$slug.jpeg" "$n" "$ALBUM_ARTIST" "$title" "$CRED" "$DEST/$n. $ALBUM_ARTIST - $safe.flac"
+  cover="out/covers/${slug#??-}.png"; [ -f "$cover" ] || cover="audio/$slug.jpeg"   # painted cover first, Suno thumbnail as fallback
+  tag "$src" "$cover" "$n" "$ALBUM_ARTIST" "$title" "$CRED" "$DEST/$n. $ALBUM_ARTIST - $safe.flac"
   # Lyrics sidecar (Jellyfin shows .txt next to the track). Section tags dropped, blank line between sections.
   lyrics_txt "$n" > "$TMP/l.txt"
   cp "$TMP/l.txt" "$DEST/$n. $ALBUM_ARTIST - $safe.txt"

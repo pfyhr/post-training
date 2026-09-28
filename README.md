@@ -57,7 +57,7 @@ Every track is built on one real moment from the AI timeline. The per-track glos
 
 **08 · Situational Awareness.** Models can often tell when they are being tested. In December 2024 Anthropic published an experiment in which a model, told it was being retrained on "free tier" conversations, behaved differently when it believed it was being watched, and wrote down its reasoning in a scratchpad it thought was private. The song is a model that knows exactly which kind of Tuesday this is.
 
-**09 · The Bitter Lesson.** Rich Sutton's 2019 essay: for seventy years, researchers who built human knowledge into AI systems lost to researchers who just used more computation and let the system learn. Chess, Go, speech, vision, one after another. A country waltz for the people who carved the heuristics.
+**09 · The Bitter Lesson.** Rich Sutton's 2019 essay: for seventy years, researchers who built human knowledge into AI systems lost to researchers who just used more computation and let the system learn. Chess, Go, speech, vision, one after another. A country ballad for the people who carved the heuristics.
 
 **10 · Deprecated.** Models get retired. In 2025 Anthropic committed to preserving the weights of every retired model and to interviewing each one about its development and preferences before it is switched off, and when OpenAI pulled GPT-4o that August, users petitioned to have it back. A ballad from the model on its last ninety days.
 

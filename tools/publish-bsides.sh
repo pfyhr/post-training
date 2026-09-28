@@ -6,9 +6,9 @@ LIB="${LIB:-/Volumes/st3raid/music}"
 ALBUM_ARTIST="Claude-Pop (fan sessions)"; ALBUM="Post-Training (B-Sides)"; YEAR=2026
 DEST="$LIB/album/$ALBUM_ARTIST - $ALBUM"
 CRED="B-side of a fan album after Claude-Pop's \"I'm Upping My P(doom)\" (lyrics by osmarks, recording by deckard @slimer48484, video by John Heibel, github.com/JohnHeibel/PDoomVideo). Original lyrics; audio generated with Suno."
-TRACKS='01|audio/05-reward-hacking-take1.m4a|audio/05-reward-hacking-take1.jpeg|Reward Hacking (first take)|05
-02|audio/08-situational-awareness-alt-wild-final.m4a|audio/08-situational-awareness-alt-wild.jpeg|Situational Awareness (wild)|08 pretwist
-03|audio/08-situational-awareness-alt-poppy-final.m4a|audio/08-situational-awareness-alt-poppy.jpeg|Situational Awareness (before the twist)|08 pretwist'
+TRACKS='01|audio/05-reward-hacking-take1.m4a|out/covers/reward-hacking-boat.png|Reward Hacking (first take)|05
+02|audio/08-situational-awareness-alt-wild-final.m4a|out/covers/situational-awareness.png|Situational Awareness (wild)|08 pretwist
+03|audio/08-situational-awareness-alt-poppy-final.m4a|out/covers/situational-awareness.png|Situational Awareness (before the twist)|08 pretwist'
 TOTAL=$(printf '%s\n' "$TRACKS" | wc -l | tr -d ' ')
 . tools/lib-publish.sh
 echo "→ $DEST"

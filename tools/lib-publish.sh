@@ -17,7 +17,9 @@ tag() { # tag <src> <cover|-> <n> <artist> <title> <comment> <out>
   } > "$TMP/meta.txt"
   printf '%s' "$out" | sed "s|^$LIB_LOCAL_PREFIX|$LIB_REMOTE_PREFIX|" > "$TMP/dest.txt"
   files="$TMP/meta.txt $TMP/dest.txt"; cp "$src" "$TMP/in.audio"; files="$files $TMP/in.audio"
-  if [ "$cover" != "-" ] && [ -f "$cover" ]; then cp "$cover" "$TMP/cover.jpg"; files="$files $TMP/cover.jpg"; else rm -f "$TMP/cover.jpg"; fi
+  if [ "$cover" != "-" ] && [ -f "$cover" ]; then
+    case "$cover" in *.png) sips -s format jpeg -s formatOptions 90 -Z 1500 "$cover" --out "$TMP/cover.jpg" >/dev/null ;; *) cp "$cover" "$TMP/cover.jpg" ;; esac
+    files="$files $TMP/cover.jpg"; else rm -f "$TMP/cover.jpg"; fi
   scp -q -o BatchMode=yes $files "$HOST:$RT/"
   ssh -n -o BatchMode=yes "$HOST" "cd $RT && AF='aresample=44100:resampler=soxr:precision=28:dither_method=triangular' &&
     if [ -f cover.jpg ]; then ffmpeg -nostdin -hide_banner -loglevel error -i in.audio -i cover.jpg -i meta.txt -map 0:a -map 1:v -map_metadata 2 -c:v copy -disposition:v attached_pic -af \"\$AF\" -c:a flac -sample_fmt s16 -y out.flac;
