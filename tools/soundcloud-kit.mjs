@@ -21,9 +21,13 @@ for (const t of album.tracks) {
   const wav = `audio/masters/${slug}.wav`;
   if (existsSync(wav)) execFileSync('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-i', wav, '-c:a', 'flac', `${OUT}/audio/${name}.flac`]);
   const cover = `out/covers/${coverSlug(slug)}.png`; if (existsSync(cover)) jpg(cover, `${OUT}/art/${name}.jpg`);
-  const lyr = t.lyrics.split('\n').filter(l => !/^\[.*\]$/.test(l.trim())).join('\n').replace(/\n{3,}/g, '\n\n').trim();
-  const desc = `${note(t.num)}\n\nFrom "Post-Training", a Claude-Pop fan album. Track ${t.num} of 10.\n\n${AI}\n\n${CREDIT}\n\nLYRICS\n\n${lyr}`;
-  writeFileSync(`${OUT}/text/${name}.txt`, `TITLE\n${t.title}\n\nGENRE\n${GENRE[t.num] || 'Pop'}\n\nTAGS\n${TAGS}\n\nDESCRIPTION (${desc.length} characters)\n${desc}\n`);
+  // Section labels kept for readers, the Suno production directions after the dash dropped: [Final Chorus – key change] → [Final Chorus]
+  const lyr = t.lyrics.split('\n').map(l => l.replace(/^\[([^\]–-]+?)\s*[–-][^\]]*\]$/, '[$1]')).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  const story = `${note(t.num)}\n\nFrom "Post-Training", a Claude-Pop fan album. Track ${t.num} of 10.\n\n${AI}\n\n${CREDIT}`;
+  const desc = `${story}\n\nLYRICS\n\n${lyr}`;
+  writeFileSync(`${OUT}/text/${name}.txt`, `TITLE\n${t.title}\n\nGENRE\n${GENRE[t.num] || 'Pop'}\n\nTAGS\n${TAGS}\n\n` +
+    `=== IF SOUNDCLOUD HAS A LYRICS FIELD: paste DESCRIPTION (SHORT) and LYRICS separately ===\n\nDESCRIPTION (SHORT, ${story.length} characters)\n${story}\n\nLYRICS\n${lyr}\n\n` +
+    `=== IF THERE IS NO LYRICS FIELD: paste this one instead ===\n\nDESCRIPTION (WITH LYRICS, ${desc.length} characters)\n${desc}\n`);
   lines.push(`${name}: audio ${existsSync(wav) ? 'yes' : 'MISSING'}, art ${existsSync(cover) ? 'yes' : 'MISSING'}, description ${desc.length} chars`);
 }
 if (existsSync('out/covers/album.png')) jpg('out/covers/album.png', `${OUT}/art/00 Post-Training (album).jpg`);
