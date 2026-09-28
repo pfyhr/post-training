@@ -79,7 +79,7 @@ Lyrics of the single: osmarks. Recording and the Claude-Pop name: deckard (@slim
 
 Code (`tools/`, `video/covers/`) is MIT: see [LICENSE](LICENSE). Lyrics, prompts, liner notes and cover art are
 CC BY 4.0: see [LICENSE-CONTENT.md](LICENSE-CONTENT.md), which also lists what isn't ours to license (track 01,
-the PDoomVideo engine, and the Suno audio, which isn't in the repo).
+and the PDoomVideo engine). The audio for tracks 02–10 is CC BY 4.0 too, and downloadable as MP3 and FLAC from [Releases](https://github.com/pfyhr/post-training/releases).
 
 ## Later: videos
 
