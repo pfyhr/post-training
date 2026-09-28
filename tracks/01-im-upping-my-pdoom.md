@@ -5,7 +5,7 @@ The single. Not ours: lyrics by [osmarks](https://www.youtube.com/watch?v=uEB5E6
 **Style (as heard):** upbeat synth-pop, 88 BPM, karaoke-friendly, dense with AI-discourse references. The rest of the album is written to sit next to it.
 **Tempo:** 88 BPM · **Length:** 2:37
 
-**Audio on hand:** `diskdatorn:/mnt/st3raid/music/single/OtherReality - Claude Pop/01. OtherReality - I'm Upping My P(Doom).m4a`
+**Audio:** deckard's recording, linked above. Not included in this repo.
 **Timed lyrics:** `src/lyrics.js` in the PDoomVideo repo (timestamps taken from the source video's subtitles).
 
 Lyrics are not reproduced here; see the links above.

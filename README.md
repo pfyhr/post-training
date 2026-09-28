@@ -33,11 +33,11 @@ The lyrics and style prompts are written for Suno (the tool Claude-Pop almost ce
 2. In Suno, use **Custom** mode: style box gets the style block, lyrics box gets the lyrics, title as given.
 3. Generate 4–6 takes per track, pick the best, then use **Extend** or **Cover** to fix a weak section rather than re-rolling the whole song.
 4. Save the finals into `audio/` (git-ignored) with `tools/fetch-suno.sh <share url> <NN-slug>`. It pulls the mp4 Suno serves publicly (the mp3 link is blocked), extracts an m4a, and grabs the cover.
-5. `tools/publish-jellyfin.sh` tags the finals and copies them into the Jellyfin library on diskdatorn. Set `JELLYFIN_API_KEY` and it triggers the library scan too.
+5. `tools/publish-jellyfin.sh` tags the finals and encodes them on your media server and puts them in its Jellyfin library. Copy `tools/local.env.example` to `tools/local.env` and fill in your host and paths first. Set `JELLYFIN_API_KEY` and it triggers the library scan too.
 
 `album.json` holds the same data machine-readably, for batching against an API later. After editing a track file, run `node tools/build.mjs` to refresh both.
 
-Track 01's audio lives on diskdatorn at `/mnt/st3raid/music/single/OtherReality - Claude Pop/`.
+Track 01 is deckard's recording. If you have a copy, point `SINGLE` in `tools/local.env` at it; it is re-tagged with full credits for your own library and never uploaded anywhere.
 
 ## Liner notes
 
@@ -74,6 +74,12 @@ Takes that lost the coin toss but deserve a life. Kept in `audio/`, not publishe
 ## Credits
 
 Lyrics of the single: osmarks. Recording and the Claude-Pop name: deckard (@slimer48484). Video and pipeline: John Heibel. Full details and the sharing rules are in [CREDITS.md](CREDITS.md). Tracks 02–10 are original and carry a credit footer; the Suno paste files and `album.json` carry it too, so it travels with the prompts.
+
+## Licence
+
+Code (`tools/`, `video/covers/`) is MIT: see [LICENSE](LICENSE). Lyrics, prompts, liner notes and cover art are
+CC BY 4.0: see [LICENSE-CONTENT.md](LICENSE-CONTENT.md), which also lists what isn't ours to license (track 01,
+the PDoomVideo engine, and the Suno audio, which isn't in the repo).
 
 ## Later: videos
 

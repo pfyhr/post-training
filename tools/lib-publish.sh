@@ -2,9 +2,9 @@
 # LIB, ALBUM_ARTIST, ALBUM, YEAR, TOTAL, DEST. Provides: tag(), lyrics_txt(), jellyfin_scan().
 TMP=$(mktemp -d)
 mkdir -p "$DEST"
-# The encode runs on diskdatorn (Ubuntu ffmpeg, with soxr). This script only ships the source audio, cover and
+# The encode runs on the media server (Ubuntu ffmpeg, with soxr). This script only ships the source audio, cover and
 # tags over ssh; the FLAC is written straight into the library there. Sidecars (lyrics) still go over the mount.
-HOST="${JELLYFIN_HOST:-diskdatorn}"; LIB_LOCAL_PREFIX=/Volumes/st3raid; LIB_REMOTE_PREFIX=/mnt/st3raid
+HOST="${JELLYFIN_HOST:?set JELLYFIN_HOST in tools/local.env}"; LIB_LOCAL_PREFIX="${LIB_LOCAL_PREFIX:?}"; LIB_REMOTE_PREFIX="${LIB_REMOTE_PREFIX:?}"
 RT=$(ssh -o BatchMode=yes "$HOST" 'mktemp -d /tmp/postraining.XXXXXX')
 trap 'rm -rf "$TMP"; ssh -o BatchMode=yes "$HOST" "rm -rf $RT" 2>/dev/null' EXIT
 ffmeta() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/=/\\=/g' -e 's/;/\\;/g' -e 's/#/\\#/g'; }
@@ -41,13 +41,13 @@ process.stdout.write(body + "\n\n(Lyrics: Post-Training fan album, after Claude-
 }
 
 jellyfin_scan() {
-  # Ask Jellyfin to rescan. Writes over SMB don't trip its real-time monitor. The API key stays on diskdatorn
-  # (~/.jellyfin.key): the request is made from there over ssh, so the key never leaves the server.
+  # Ask Jellyfin to rescan. Writes over SMB don't trip its real-time monitor. The API key stays on the server
+  # (~/.jellyfin.key on the server): the request is made from there over ssh, so the key never leaves the server.
   # JELLYFIN_API_KEY in the local environment is used instead if set.
   if [ -n "$JELLYFIN_API_KEY" ]; then
-    code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "X-Emby-Token: $JELLYFIN_API_KEY" "${JELLYFIN_URL:-http://diskdatorn:8096}/Library/Refresh")
+    code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "X-Emby-Token: $JELLYFIN_API_KEY" "${JELLYFIN_URL:-http://$HOST:8096}/Library/Refresh")
   else
-    code=$(ssh -o BatchMode=yes -o ConnectTimeout=5 "${JELLYFIN_HOST:-diskdatorn}" 'k=$(grep -oE "[A-Fa-f0-9]{32}" ~/.jellyfin.key | head -1); curl -s -o /dev/null -w "%{http_code}" -X POST -H "X-Emby-Token: $k" http://localhost:8096/Library/Refresh' 2>/dev/null)
+    code=$(ssh -o BatchMode=yes -o ConnectTimeout=5 "$HOST" 'k=$(grep -oE "[A-Fa-f0-9]{32}" ~/.jellyfin.key | head -1); curl -s -o /dev/null -w "%{http_code}" -X POST -H "X-Emby-Token: $k" http://localhost:8096/Library/Refresh' 2>/dev/null)
   fi
   [ "$code" = "204" ] && echo "jellyfin: library scan triggered" || echo "jellyfin: scan request returned HTTP ${code:-none}; run a library scan in the dashboard"
 }

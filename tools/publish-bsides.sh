@@ -2,7 +2,8 @@
 # tools/publish-bsides.sh: publish the alternate takes as "Post-Training (B-Sides)" in the Jellyfin library.
 # One line per track in the list below: number | source audio | cover | title | lyrics (album track num [pretwist]).
 set -e
-LIB="${LIB:-/Volumes/st3raid/music}"
+[ -f tools/local.env ] && . tools/local.env   # your host and paths; see tools/local.env.example
+LIB="${LIB:?set LIB in tools/local.env}"
 ALBUM_ARTIST="Claude-Pop (fan sessions)"; ALBUM="Post-Training (B-Sides)"; YEAR=2026
 DEST="$LIB/album/$ALBUM_ARTIST - $ALBUM"
 CRED="B-side of a fan album after Claude-Pop's \"I'm Upping My P(doom)\" (lyrics by osmarks, recording by deckard @slimer48484, video by John Heibel, github.com/JohnHeibel/PDoomVideo). Original lyrics; audio generated with Suno."

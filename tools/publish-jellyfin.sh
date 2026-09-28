@@ -1,13 +1,14 @@
 #!/bin/sh
-# tools/publish-jellyfin.sh: tag the finished takes and copy them into the Jellyfin music library on diskdatorn.
+# tools/publish-jellyfin.sh: tag the finished takes and copy them into a Jellyfin music library on your media server.
 # Track 01 is deckard's single, taken from the existing file on the share and re-tagged with full credits.
 # Tracks 02-10: audio/masters/NN-slug.wav (lossless, from Suno WAV or WAV stems) wins, then audio/NN-slug-final.m4a, then audio/NN-slug.m4a.
 set -e
-LIB="${LIB:-/Volumes/st3raid/music}"
+[ -f tools/local.env ] && . tools/local.env   # your host and paths; see tools/local.env.example
+LIB="${LIB:?set LIB in tools/local.env}"
 ALBUM_ARTIST="Claude-Pop (fan sessions)"; ALBUM="Post-Training"; YEAR=2026; TOTAL=10
 DEST="$LIB/album/$ALBUM_ARTIST - $ALBUM"
 CRED="Fan album after Claude-Pop's \"I'm Upping My P(doom)\" (lyrics by osmarks, recording by deckard @slimer48484, video by John Heibel, github.com/JohnHeibel/PDoomVideo). Original lyrics for this track; audio generated with Suno."
-SINGLE="$LIB/single/OtherReality - Claude Pop/01. OtherReality - I'm Upping My P(Doom).m4a"
+SINGLE="${SINGLE:-}"
 . tools/lib-publish.sh
 rm -f "$DEST"/*.m4a   # album is published as FLAC 44.1 kHz/16-bit (m4a at 48 kHz was silent in Finamp downloads)
 
