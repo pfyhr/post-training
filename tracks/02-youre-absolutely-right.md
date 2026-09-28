@@ -1,6 +1,6 @@
 # 02 · You're Absolutely Right
 
-**Style:** smooth 90s R&B slow jam, quiet-storm harmonies, new jack swing ballad feel. Falsetto lead, stacked harmonies, finger snaps, Rhodes piano, slow-burn key change at the end. Romantic, slightly desperate. Spoken ad-libs throughout.
+**Style:** 90s R&B slow jam with real dynamics, quiet-storm harmonies, new jack swing ballad feel. Soaring falsetto lead with big runs, lush stacked harmonies that swell into each chorus, finger snaps, Rhodes piano, deep bass, a dramatic gospel-choir key change at the end. Romantic, over-the-top, playful, slightly desperate. Spoken ad-libs throughout, cheeky and knowing.
 **Tempo:** 68 BPM · **Key:** Db major · **Length:** ~3:30
 **Voice:** the model, singing to its user.
 
