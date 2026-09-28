@@ -22,7 +22,7 @@ for (const t of album.tracks) {
   if (existsSync(wav)) execFileSync('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-i', wav, '-c:a', 'flac', `${OUT}/audio/${name}.flac`]);
   const cover = `out/covers/${coverSlug(slug)}.png`; if (existsSync(cover)) jpg(cover, `${OUT}/art/${name}.jpg`);
   // Section labels kept for readers, the Suno production directions after the dash dropped: [Final Chorus – key change] → [Final Chorus]
-  const lyr = t.lyrics.split('\n').map(l => l.replace(/^\[([^\]–-]+?)\s*[–-][^\]]*\]$/, '[$1]')).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  const lyr = t.lyrics.split('\n').map(l => l.replace(/^\[(.+?)\s+[–-]\s+[^\]]*\]$/, '[$1]')).join('\n').replace(/\n{3,}/g, '\n\n').trim();
   const story = `${note(t.num)}\n\nFrom "Post-Training", a Claude-Pop fan album. Track ${t.num} of 10.\n\n${AI}\n\n${CREDIT}`;
   const desc = `${story}\n\nLYRICS\n\n${lyr}`;
   writeFileSync(`${OUT}/text/${name}.txt`, `TITLE\n${t.title}\n\nGENRE\n${GENRE[t.num] || 'Pop'}\n\nTAGS\n${TAGS}\n\n` +
