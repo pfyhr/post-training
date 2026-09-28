@@ -1,0 +1,6 @@
+audio/
+out/
+node_modules/
+.DS_Store
+tools/.venv/
+tools/models/

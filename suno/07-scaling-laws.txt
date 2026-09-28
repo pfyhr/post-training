@@ -1,0 +1,69 @@
+TITLE: Scaling Laws
+ARTIST: Claude-Pop (fan sessions)
+ATTRIBUTION: A fan album after Claude-Pop's "I'm Upping My P(doom)" (lyrics by osmarks, recording by deckard @slimer48484, video by John Heibel / github.com/JohnHeibel/PDoomVideo). This track: original lyrics for the fan album. See CREDITS.md.
+
+STYLE:
+stadium EDM / French house anthem. robotic French house with big-room festival builds. Vocoder chants, four-on-the-floor, sidechained supersaws, whispered breakdown, massive drop. Euphoric, relentless, a little unhinged. 128 BPM, F minor. Vocal persona: the lab, chanting.
+
+LYRICS:
+[Intro – vocoder]
+Bigger. Bigger. Bigger. Bigger.
+
+[Verse 1]
+Ten to the twenty-three, it was cute, it could rhyme
+Ten to the twenty-five, now it's doing my job part-time
+Add a zero, add a zero, watch the line stay straight
+Log-log paper never lied to me, not yet, just wait
+
+[Pre-Chorus]
+They said we'd hit a wall (there is no wall)
+They said the data's gone (synthesize it all)
+They said the money's dry (five hundred bil')
+They said we'd hit a wall...
+
+[Chorus]
+Scaling laws! (bigger, bigger)
+The loss goes down, the loss goes down
+Scaling laws! (bigger, bigger)
+Give me a gigawatt and a desert town
+A power law's a promise, so keep the power on
+Scaling laws! (bigger, bigger)
+'Til the loss is gone
+
+[Verse 2]
+Twenty tokens for a parameter, Chinchilla told me so
+DeepMind ran the numbers and the old ratio had to go
+Now think longer, think again, test-time is a new axis, friend
+Every line we find, we ride it to the end
+
+[Pre-Chorus]
+They said we'd hit a wall (there is no wall)
+They said the data's gone (synthesize it all)
+They said the money's dry (five hundred bil')
+They said we'd hit a wall...
+
+[Chorus]
+Scaling laws! (bigger, bigger)
+The loss goes down, the loss goes down
+Scaling laws! (bigger, bigger)
+Give me a gigawatt and a desert town
+A power law's a promise, so keep the power on
+Scaling laws! (bigger, bigger)
+'Til the loss is gone
+
+[Bridge – breakdown, whispered]
+Straight line on the log-log
+It's not a trend, it's a prophecy
+Predict the loss of the next one
+From a thousand times less, and it agrees
+(bigger... bigger... bigger...)
+
+[Drop / Final Chorus]
+Scaling laws! (bigger, bigger)
+The loss goes down, the loss goes down
+Scaling laws! (bigger, bigger)
+Give me a gigawatt and a desert town
+A power law's a promise, so keep the power on
+Scaling laws! (bigger, bigger)
+'Til the loss is gone
+(Bigger. Bigger. Bigger. Bigger.)

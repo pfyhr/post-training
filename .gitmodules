@@ -1,0 +1,3 @@
+[submodule "video/engine"]
+	path = video/engine
+	url = https://github.com/JohnHeibel/PDoomVideo
