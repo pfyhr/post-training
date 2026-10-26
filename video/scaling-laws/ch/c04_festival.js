@@ -413,7 +413,7 @@
   function plugShot(t, lt) {
     const on = t >= JAM, lit = on ? 1 : 0;
     const nb = (t - barT(48)) / BEAT, prog = on ? 1 : clamp((Math.floor(nb) + easeOut(clamp(frac(nb) * 2.2))) / 6);
-    const px = lerp(440, 940, prog) + (on ? 0 : 0), [sx, sy] = shakeXY(t, on ? 14 * Math.max(0, 1 - (t - JAM) * 3) : 2 * pulse(t, 8));
+    const px = lerp(440, 1000, prog), [sx, sy] = shakeXY(t, on ? 14 * Math.max(0, 1 - (t - JAM) * 3) : 2 * pulse(t, 8));
     camBegin(960 + sx, 520 + sy, 1.0);
     sky(-200, 2100, 620);
     dunes(-200, 2100, 660, lit);
@@ -426,9 +426,9 @@
     if (!on) flash(.45, '#0E0A1E');
     // the cable, from the stage to the plug
     inkLine([[330, 760], [px - 220, 860], [px - 40, 760], [px + 20, 650]], 7, '#2A2340', 'ink', .7);
-    // the plug: prongs out front, grip ridges
-    const pw = 520, ph = 270, py = 480, x0 = px + 40;
-    for (const y of [512, 632]) paint(rectPts(x0 + pw - 10, y, 170, 30, 1), { wash: '#D8C9A0', washOp: 255, fill: PAL.ochre, fillOp: 60, ink: PAL.ink, sw: 1.2 });
+    // the plug: prongs out front (lined up with the slots; the part inside the socket face at x 1560 is hidden), grip ridges
+    const pw = 520, ph = 270, py = 480, x0 = px + 40, pl = Math.min(170, 1560 - (x0 + pw - 10));
+    if (pl > 2) for (const y of [502, 622]) paint(rectPts(x0 + pw - 10, y, pl, 30, 1), { wash: '#D8C9A0', washOp: 255, fill: PAL.ochre, fillOp: 60, ink: PAL.ink, sw: 1.2 });
     paint(rrPts(x0, py, pw, ph, 40), { wash: '#ECE4D4', washOp: 255, fill: STEELV, fillOp: 60, tex: .5, ink: PAL.ink, sw: 1.6 });
     paint(rrPts(x0 - 40, py + 70, 60, 130, 18), { wash: '#BDB4CE', washOp: 255, ink: PAL.ink, sw: 1.2 });
     for (let i = 1; i < 5; i++) inkLine([[x0 + i * 70, py + 25], [x0 + i * 70, py + ph - 25]], 2, '#A79FBE', 'ink', 0);
