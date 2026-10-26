@@ -351,9 +351,12 @@
   const build = t => seg(t, T5, SMASH0);
   const camAt = t => kf(t, [[T5, [960, 600, 1.12]], [barT(39), [960, 330, .62]], [SMASH0, [P[0] + 60, P[1] - 10, 2.3]], [END, [P[0] + 60, P[1] - 10, 2.45]]],
     x => x < 0 ? 0 : ease(x));
-  const crackPath = (sgn, L, seed) => {                                                        // a jagged crack along +-DIR
-    const pts = [[P[0], P[1]]], n = Math.max(1, Math.floor(L / 46));
-    for (let i = 1; i <= n; i++) { const d = i * L / n, o = (hash(seed + i * 3.7) - .5) * 44; pts.push([P[0] + sgn * DIR[0] * d - DIR[1] * o, P[1] + sgn * DIR[1] * d + DIR[0] * o]); }
+  const crackPath = (ang, L, seed) => {                                                        // a jagged crack out from the impact point
+    const pts = [[P[0], P[1]]], n = Math.max(1, Math.floor(L / 40));
+    for (let i = 1; i <= n; i++) {
+      const a = ang + (hash(seed + i * 3.7) - .5) * .9, p = pts[i - 1];
+      pts.push([p[0] + Math.cos(a) * L / n, p[1] + Math.sin(a) * L / n]);
+    }
     return pts;
   };
   const strip = (pts, w0, w1) => {                                                             // tapered filled stroke, safe under zoom
@@ -399,20 +402,19 @@
     sky(BRK.bot, { dark: .35, sun: false, grid: z < 1.4, sunX: 960 });
     bigWall(t, view);
     ground(BRK.bot, -1400, W + 1400);
-    // cracks along the line's path, growing with the roll; light from the far side leaks through near the end
-    const L = 30 + 820 * Math.pow(B, 1.6) * (.9 + .1 * hit);
+    // cracks radiate from where the line presses in, growing with the roll; warm light leaks through near the end
+    const L = 30 + 620 * Math.pow(B, 1.6) * (.9 + .1 * hit);
     const leak = seg(t, barT(40), SMASH0);
-        if (B > .02) {
-      const crackCol = mixCol('#2A1C30', '#7FE8DA', leak * (.5 + .5 * hit));
-      if (leak > 0) paint(strip(crackPath(1, L, 1), 60 / Math.min(z, 1.6), 10), { fill: '#3FF0D8', fillOp: 70 * leak * (.5 + .5 * hit), bleed: .3, ink: null });
-      paint(strip(crackPath(1, L, 1), 16 / Math.min(z, 1.6), 2), { wash: crackCol, washOp: 255, ink: null });
-      paint(strip(crackPath(-1, L * .45, 7), 14 / Math.min(z, 1.6), 2), { wash: crackCol, washOp: 255, ink: null });
-      for (let j = 0; j < 6; j++) {                                                             // branches
-        const st = crackPath(j % 2 ? -1 : 1, L * (j % 2 ? .45 : 1), j % 2 ? 7 : 1), bi = Math.min(st.length - 1, 1 + Math.floor(hash(j * 4.4) * (st.length - 1))), o = st[bi];
-        if (bi < 1) continue;
-        const ang = Math.atan2(DIR[1], DIR[0]) + (hash(j * 6.1) > .5 ? 1 : -1) * (.7 + .8 * hash(j)), bl = L * .22 * (.6 + hash(j * 2.2));
-        const pts = [o]; for (let q = 1; q <= 3; q++) pts.push([o[0] + Math.cos(ang) * bl * q / 3 + (hash(j + q) - .5) * 16, o[1] + Math.sin(ang) * bl * q / 3 + (hash(j * q) - .5) * 16]);
-        paint(strip(pts, 9 / Math.min(z, 1.6), 1.5), { wash: crackCol, washOp: 255, ink: null });
+    if (B > .02) {
+      const crackCol = mixCol('#2A1C30', '#FFE9B0', leak * (.4 + .6 * hit)), zw = 1 / Math.min(z, 1.6);
+      for (let j = 0; j < 9; j++) {
+        const ang = j / 9 * Math.PI * 2 + .35 + (hash(j * 5.1) - .5) * .5, len = L * (.45 + .55 * hash(j * 2.3)), st = crackPath(ang, len, j * 13);
+        if (leak > 0) paint(strip(st, 34 * zw, 6), { fill: '#FFD27A', fillOp: 60 * leak * (.5 + .5 * hit), bleed: .3, ink: null });
+        paint(strip(st, 15 * zw, 2), { wash: crackCol, washOp: 255, ink: null });
+        if (st.length > 3) {                                                                   // one fork per crack
+          const o = st[Math.floor(st.length / 2)], fa = ang + (hash(j * 6.1) > .5 ? .8 : -.8);
+          paint(strip(crackPath(fa, len * .4, j * 31).map(([x, y]) => [x - P[0] + o[0], y - P[1] + o[1]]), 9 * zw, 1.5), { wash: crackCol, washOp: 255, ink: null });
+        }
       }
     }
     if (k > 0) hole(t, k);

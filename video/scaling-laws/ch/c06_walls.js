@@ -357,13 +357,23 @@
     paint([[4900, -2900], [4750, -2550], [4920, -2620], [5080, -2500]], { wash: PAL.cream, washOp: 220, ink: null });
     ground(GROUND, -3000, 6500);
   }
-  function cracks(hit, t, k) {                           // gold cracks spreading from the impact point
+  // a tapered filled stroke along pts (ink lines vanish at this zoom; filled shapes hold)
+  const strip = (pts, w0, w1) => {
+    const L = [], R = [];
+    pts.forEach((p, i) => {
+      const q = pts[Math.min(pts.length - 1, i + 1)], r = pts[Math.max(0, i - 1)], dx = q[0] - r[0], dy = q[1] - r[1], l = Math.hypot(dx, dy) || 1, w = lerp(w0, w1, i / (pts.length - 1)) / 2;
+      L.push([p[0] - dy / l * w, p[1] + dx / l * w]); R.push([p[0] + dy / l * w, p[1] - dx / l * w]);
+    });
+    return L.concat(R.reverse());
+  };
+  function cracks(hit, t, k) {                           // dark cracks fanning into the dam from the impact point, gold light inside
     for (let i = 0; i < 9; i++) {
-      const a = hash(i * 3.7) * TAU, len = (300 + 700 * hash(i + 11)) * k; if (len < 20) continue;
+      const a = -1.35 + (i + .3 * hash(i * 3.7)) / 9 * 2.7, len = (1500 + 2400 * hash(i + 11)) * k; if (len < 30) continue;
       const pts = [[hit[0], hit[1]]]; let x = hit[0], y = hit[1];
-      for (let s = 1; s <= 4; s++) { const aa = a + (hash(i * 9 + s) - .5) * .9; x += Math.cos(aa) * len / 4; y += Math.sin(aa) * len / 4; pts.push([x, y]); }
-      inkLine(pts, 4 + 6 * k, GOLD, 'ink', 0);
-      inkLine(pts, 1.5 + 2 * k, GOLD_LT, 'ink', 0);
+      for (let s = 1; s <= 5; s++) { const aa = a + (hash(i * 9 + s) - .5) * .9; x += Math.cos(aa) * len / 5; y += Math.sin(aa) * len / 5; pts.push([x, y]); }
+      paint(strip(pts, 180 * Math.min(1, k), 20), { fill: GOLD, fillOp: 90, bleed: .3, ink: null });
+      paint(strip(pts, 75 * Math.min(1, k) + 15, 10), { wash: '#2A1C30', washOp: 255, ink: null });
+      paint(strip(pts, 25 * Math.min(1, k) + 5, 4), { wash: GOLD_LT, washOp: 255, ink: null });
     }
   }
   function climber(k, t) {
@@ -411,13 +421,13 @@
       skeptic(x, -2190, 34, { ...sm, flip: true, aR: a, dy: -.3 * roll, mouth: frac(bpOf(t) * 2) < .5 ? 'O' : 'wobble' });
       if (t < IMPACT) shout(bell(-x, -2190, 34, a).map((v, j) => j ? v : -v), Math.PI - a, 34, t, PAL.cream, .8); });
     // cracks creep across the dam on each roll hit in the last bar
-    const pre = seg(t, barT(72), IMPACT);
+    const pre = seg(t, barT(71), IMPACT);
     // the line, held by the top of the tower; wind up, then thrust
     const tailFeet = Math.min(towerTop(t), feetY(0));
     const wind = ease(seg(t, IMPACT - .55, IMPACT - .12)), thrust = easeIn(seg(t, IMPACT - .12, IMPACT));
     const push_ = 180 * wind - 600 * thrust, tail = [BASE_X + 40 - DIR[0] * push_, tailFeet - 40 - DIR[1] * push_];
     const tip = [tail[0] + DIR[0] * LLEN, tail[1] + DIR[1] * LLEN];
-    if (pre > 0) cracks([tip[0] + 260, tip[1] - 20], t, .5 * pre * (.6 + .4 * roll));
+    if (pre > 0) cracks([tip[0] + 30, tip[1]], t, .6 * pre * (.75 + .25 * roll));
     beam([tail[0] - DIR[0] * 3000, tail[1] - DIR[1] * 3000], tip, 70, 1 + 1.5 * pre);
     tower(t);
     if (t >= IMPACT) {

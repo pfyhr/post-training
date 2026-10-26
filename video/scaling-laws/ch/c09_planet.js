@@ -12,25 +12,8 @@
   const P = (t, k = 7) => pulse(t, k), E = barT(114);
   const chantOn = t => frac(bpOf(t)) < .45;
 
-  // ---------------- the robot helmet (shared spec: chrome dome, dark rim, visor, teal LED that flares on the beat) ----------------
-  const robotHelmet = (glow, glint = 0) => (u, sw) => {
-    const d = []; for (let i = 0; i <= 20; i++) { const a = Math.PI + i / 20 * Math.PI; d.push([Math.cos(a) * 5.6 * u, -7.5 * u + Math.sin(a) * 4.7 * u]); }
-    paint(d, { wash: CHROME, washOp: 255, fill: CHROME_DK, fillOp: 45, tex: .4, ink: PAL.ink, sw: sw * .8 });
-    paint(ellPts(2.7 * u, -9.4 * u, 2.2 * u, 1.5 * u, 16, 0, -.5), { fill: CHROME_DK, fillOp: 80, bleed: .2, ink: null });   // far-side shade
-    paint(ellPts(-2.4 * u, -10.3 * u, 1.0 * u, 1.9 * u, 14, 0, .55), { wash: '#F4F6FA', washOp: 230, ink: null });            // highlight
-    paint(ellPts(-.5 * u, -11.7 * u, .5 * u, .3 * u, 10), { wash: '#F4F6FA', washOp: 200, ink: null });
-    paint(rrPts(-5.75 * u, -8.25 * u, 11.5 * u, 1.0 * u, .35 * u), { wash: CHROME_DK, washOp: 255, ink: PAL.ink, sw: sw * .7 }); // lower rim
-    paint(rrPts(-5.35 * u, -7.35 * u, 10.7 * u, 2.35 * u, .7 * u), { wash: VISOR, washOp: 252, ink: PAL.ink, sw: sw * .8 });    // visor
-    paint(rrPts(-5 * u, -6.75 * u, 10 * u, 1.1 * u, .5 * u), { fill: LED, fillOp: 50 + 160 * glow, bleed: .25, ink: null });  // LED glow
-    paint(rrPts(-4.6 * u, -6.36 * u, 9.2 * u, .34 * u, .17 * u), { wash: mixCol('#1F8F86', LED, .35 + .65 * glow), washOp: 255, ink: null });
-    if (glow > .5) paint(rrPts(-4.1 * u, -6.27 * u, 8.2 * u, .14 * u, .07 * u), { wash: '#E8FFFB', washOp: 255 * (glow - .5) * 2, ink: null });
-    inkLine([[-4.5 * u, -7.0 * u], [-2.6 * u, -7.05 * u]], sw * .5, '#5A5F78', 'inkfine', 0);                                   // visor sheen
-    if (glint > .03) {                                                                                                           // the sun catching the dome
-      const r = (1.2 + 2.2 * glint) * u;
-      paint(ellPts(-2.6 * u, -10.6 * u, r * .9, r * .9, 16), { fill: GOLD_LT, fillOp: 140 * glint, bleed: .3, ink: null });
-      paint(starPts(-2.6 * u, -10.6 * u, r, .16, 4, glint * .6), { wash: '#FFFBEA', washOp: 255, ink: null });
-    }
-  };
+  // the robot helmet is shared by the three choruses (sl_cast.js); here the sun glints off it
+  const robotHelmet = (glow, glint = 0) => SL.robotHelmet(glow, { glint });
 
   // ---------------- sky: dawn in space, a faint log-log grid, and the sun ----------------
   function loglog(x0, y0, x1, y1, D, col, w) {               // decades from the bottom-left corner, 9 lines each

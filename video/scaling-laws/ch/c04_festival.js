@@ -9,31 +9,8 @@
   const DECK = '#4A2F66', DECK_DK = '#24163C', STEELV = '#B4ACD6', BRICK = '#9B4B3A', MORTAR = '#4A2230';
   const CHROME = '#C9CED8', CHROME_DK = '#8C93A3', VISOR = '#1C1A2E';
 
-  // ---------------- the robot helmet (chapters 7 and 9 copy this) ----------------
-  // A chrome dome from the brow up, with a dark horizon reflection, a pale highlight and a darker lower rim; ear discs
-  // at the sides; a dark visor band across the eyes with a neon LED stripe that brightens with `glow` (0..1).
-  const robotHelmet = (glow = 0) => (u, sw) => {
-    const cy = -7.5 * u, rx = 5.5 * u, ry = 4.7 * u, xAt = y => rx * Math.sqrt(Math.max(0, 1 - ((y - cy) / ry) ** 2));
-    const d = []; for (let i = 0; i <= 18; i++) { const a = Math.PI + i / 18 * Math.PI; d.push([Math.cos(a) * rx, cy + Math.sin(a) * ry]); }
-    paint(d, { wash: CHROME, washOp: 255, fill: CHROME_DK, fillOp: 50, tex: .3, ink: PAL.ink, sw: sw * .9 });
-    // chrome: a dark horizon band bowed with the dome, and a sky streak above it
-    const band = [], y1 = -9.1 * u, y2 = -8.35 * u;
-    for (let i = 0; i <= 8; i++) { const k = i / 8 * 2 - 1, x = k * xAt(y1) * .97; band.push([x, y1 - .5 * u * (1 - k * k)]); }
-    for (let i = 8; i >= 0; i--) { const k = i / 8 * 2 - 1, x = k * xAt(y2) * .98; band.push([x, y2 - .35 * u * (1 - k * k)]); }
-    paint(band, { wash: '#6E7290', washOp: 235, ink: null });
-    paint(ellPts(-2.1 * u, -10.6 * u, 1.5 * u, .55 * u, 14, 0, -.32), { wash: '#F4F6FA', washOp: 235, ink: null });
-    paint(starPts(2.5 * u, -10.9 * u, .7 * u, .25, 4), { wash: '#FFFFFF', washOp: 230, ink: null });
-    paint(rectPts(-5.55 * u, -8.05 * u, 11.1 * u, .7 * u, 0), { wash: CHROME_DK, washOp: 255, ink: PAL.ink, sw: sw * .7 });   // lower rim
-    for (const s of [-1, 1]) paint(ellPts(s * 5.45 * u, -6.3 * u, .75 * u, 1.25 * u, 14), { wash: CHROME_DK, washOp: 255, ink: PAL.ink, sw: sw * .7 });
-    // visor and its LED stripe
-    paint(rrPts(-5.25 * u, -7.45 * u, 10.5 * u, 2.3 * u, .9 * u), { wash: VISOR, washOp: 255, ink: PAL.ink, sw: sw * .9 });
-    inkLine([[-4.4 * u, -7.1 * u], [-1.5 * u, -7.15 * u]], sw * .7, '#5A5478', 'inkfine', 0);
-    paint(rrPts(-4.7 * u, -6.75 * u, 9.4 * u, 1.1 * u, .5 * u), { fill: NEON, fillOp: 40 + 150 * glow, bleed: .25, tex: .2, ink: null });
-    paint(rrPts(-4.2 * u, -6.45 * u, 8.4 * u, .5 * u, .25 * u), { wash: mixCol('#17605A', NEON, .3 + .7 * glow), washOp: 255, ink: null });
-    if (glow > .55) paint(rrPts(-3.6 * u, -6.33 * u, 7.2 * u, .24 * u, .12 * u), { wash: '#E6FFFB', washOp: 255 * (glow - .55) / .45, ink: null });
-    if (u > 14) for (let i = -3; i <= 3; i++) paint(rectPts(i * 1.1 * u - .07 * u, -6.5 * u, .14 * u, .6 * u, 0), { wash: VISOR, washOp: 220, ink: null });
-  };
-  const helmetGlow = t => .25 + .75 * pulse(t, 5);
+  // the robot helmet is shared by the three choruses (sl_cast.js)
+  const robotHelmet = glow => SL.robotHelmet(glow), helmetGlow = SL.helmetGlow;
 
   // a glow stick in Clawd's right hand, drawn after the Clawd (an arm hook would hide behind the body): pass the same
   // ground point, unit, right-arm angle and dy as the clawd() call

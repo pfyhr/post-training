@@ -10,33 +10,11 @@
   const T0 = barT(73), T1 = 157.53, BLACK = 157.3;
   const chant = t => frac(bpOf(t)) < .45;
 
-  // ---------------- the robot helmet (shared spec with chapters 4 and 9) ----------------
-  // a chrome dome over the head-top from just above the eyes, darker lower rim, dark visor across the eyes and a
-  // neon LED stripe inside it. glow 0..1 brightens the stripe (pass it a beat pulse).
-  const robotHelmet = (glow = 0) => (u, sw) => {
-    const d = []; for (let i = 0; i <= 20; i++) { const a = Math.PI + i / 20 * Math.PI; d.push([Math.cos(a) * 5.15 * u, -7.5 * u + Math.sin(a) * 3.9 * Math.pow(Math.abs(Math.sin(a)), .35) * u]); }
-    d.push([5.15 * u, -7.2 * u], [-5.15 * u, -7.2 * u]);
-    paint(d, { wash: '#C9CED8', washOp: 255, fill: '#8C93A3', fillOp: 45, tex: .4, ink: PAL.ink, sw: sw * .9 });
-    paint(ellPts(2.2 * u, -8.3 * u, 2.4 * u, .6 * u, 16, 0, -.2), { fill: GOLD, fillOp: 80, bleed: .2, ink: null });          // gold reflection
-    const hl = []; for (let i = 0; i <= 8; i++) { const a = Math.PI * (1.12 + i * .045); hl.push([Math.cos(a) * 4.1 * u, -7.7 * u + Math.sin(a) * 2.9 * u]); }
-    for (let i = 8; i >= 0; i--) { const a = Math.PI * (1.12 + i * .045); hl.push([Math.cos(a) * 3.3 * u, -7.7 * u + Math.sin(a) * 2.2 * u]); }
-    paint(hl, { wash: '#F4F6FA', washOp: 235, ink: null, curv: .5 });                                                         // curved highlight
-    paint(ellPts(-.6 * u, -10.7 * u, .5 * u, .25 * u, 10, 0, -.1), { wash: '#F4F6FA', washOp: 220, ink: null });
-    paint(rectPts(-5.3 * u, -7.85 * u, 10.6 * u, .65 * u, 0), { wash: '#8C93A3', washOp: 255, ink: PAL.ink, sw: sw * .7 });   // lower rim
-    paint(rrPts(-5.2 * u, -7.2 * u, 10.4 * u, 2.3 * u, .7 * u), { wash: '#1C1A2E', washOp: 255, ink: PAL.ink, sw: sw * .8 }); // visor
-    paint(ellPts(0, -6.05 * u, 5.4 * u, 1.05 * u, 18), { fill: NEON, fillOp: 40 + 140 * glow, bleed: .25, ink: null });
-    paint(rrPts(-4.4 * u, -6.3 * u, 8.8 * u, .5 * u, .25 * u), { wash: mixCol('#1F8F86', NEON, .35 + .65 * glow), washOp: 255, ink: null });
-    if (glow > .4) paint(rrPts(-4.1 * u, -6.18 * u, 8.2 * u, .22 * u, .1 * u), { wash: '#E9FFFB', washOp: 255 * (glow - .4) / .6, ink: null });
-  };
-  const visor = t => .25 + .75 * pulse(t, 5);
+  // the robot helmet is shared by the three choruses (sl_cast.js); here it catches the gold
+  const robotHelmet = glow => SL.robotHelmet(glow, { tint: GOLD }), visor = SL.helmetGlow;
   // the lead Clawd: robot helmet, chants on the beat
   // the helmet is drawn after the arms, so raised arms are painted again on top, with the engine's arm geometry
-  function overArm(x, y, u, side, a, o, len = 2.2) {
-    push(); translate(x, y + (o.dy || 0) * u); if (o.rot) rotate(o.rot); scale((o.sx ?? 1) * (1 + (o.sq || 0) * .6), 1 - (o.sq || 0));
-    translate(side * 4.9 * u, -4.5 * u); rotate(side < 0 ? a : -a);
-    paint(rrPts(side < 0 ? -len * u : 0, -.5 * u, len * u, u, .3 * u), { wash: PAL.clay, washOp: 255, fill: PAL.clayDk, fillOp: 60, tex: .5, ink: PAL.ink, sw: clamp(u / 15, .45, 2.4) * .8 });
-    pop();
-  }
+  const overArm = SL.overArm;
   const lead = (t, x, y, u, o = {}) => {
     const q = { draw: robotHelmet(visor(t)), mouth: chant(t) ? 'O' : 'grin', ...o };
     for (const k of ['aL', 'aR']) if (q[k] > .95) q[k] = .95 + (q[k] - .95) * .25;   // raised arms in a V, clear of the body
