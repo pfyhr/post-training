@@ -121,9 +121,10 @@
         paint(ellPts(p[0], p[1], q, q * f, 24), { ink: GOLD_LT, sw: 3 * (1 - e), br: 'ink' }); }
     });
   }
-  // the loss line, bent into a ring around the planet; back half before the globe, front half after
+  // the loss line, bent into a ring around the planet; back half before the globe, front half after. Tilted so it
+  // runs down to the right across the planet, like the loss.
   function ring(t, g, half) {
-    const rx = g.R * 1.55, ry = g.R * .3, rot = -.14, cy = g.cy - g.R * .12, w = g.R * .045 * (1 + .3 * P(t));
+    const rx = g.R * 1.55, ry = g.R * .3, rot = .14, cy = g.cy - g.R * .12, w = g.R * .045 * (1 + .3 * P(t));
     const pt = (a, dr) => { const x = Math.cos(a) * (rx + dr), y = Math.sin(a) * (ry + dr * .35);
       return [g.cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]; };
     const band = ww => { const o = [], i = []; const a0 = half < 0 ? Math.PI : 0;
@@ -339,8 +340,9 @@
   }
 
   // ---------------- 208.14 – 211.89: pull back: it's all painted on log-log paper; the line rips through the edge ----------------
+  // The line is a loss curve: it comes in at the top left and falls to the right, through the page edge and on down into space.
   const PAPER = [[150, 140], [1400, 112], [1420, 940], [130, 958]];
-  const LA = [150, 905], LS = -.32, EDGE = 1412, lineY = x => LA[1] + LS * (x - LA[0]);
+  const LA = [150, 250], LS = .3, EDGE = 1412, lineY = x => LA[1] + LS * (x - LA[0]);
   function tearShot(t, lt, dur) {
     const p = P(t), rip = barT(112) + 3 * BEAT;           // bar 112, beat 4
     const zoom = lerp(1.55, 1, easeOut(seg(t, barT(112), barT(113) + BEAT))) + .025 * p;
@@ -357,7 +359,7 @@
     const sheet = [PAPER[0], PAPER[1], ...(torn ? notch : []), PAPER[2], PAPER[3]];
     paint(sheet, { wash: PAL.paper, washOp: 255, fill: PAL.cream, fillOp: 90, tex: .5, ink: PAL.ink, sw: 1.2 });
     loglog(170, 150, 1395, 935, 410, mixCol(PAL.paper, PAL.teal, .45), .6);
-    const sx = 1090, sy = 340;
+    const sx = 1100, sy = 725;                                // the sun sits low right, under the line, so the cable never crosses it
     paint(ellPts(sx, sy, 210, 190, 28, 6), { fill: GOLD, fillOp: 120, bleed: .3, ink: null });
     sunburst(sx, sy, GOLD_LT, PAL.clayLt, t * .18, 14, 230, 50 + 40 * p);
     paint(ellPts(sx, sy, 86, 86, 30, 2), { wash: SUNC, washOp: 255, fill: PAL.ochre, fillOp: 70, ink: PAL.clayDk, sw: 1 });

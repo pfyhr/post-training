@@ -187,6 +187,42 @@
     for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + .4; paint(ellPts(x + Math.cos(a) * r * k, y + Math.sin(a) * r * k, 9 + 10 * k, 9 + 10 * k, 10, 1), { fill: CHALK, fillOp: 160 * (1 - k), bleed: .3, ink: null }); }
   };
 
+  // the IsoFLOP chart (Hoffmann et al. 2022) in chalk: loss vs model size (log) at four fixed compute budgets. Each budget
+  // is a U-shaped valley; bigger budgets sit lower and further right, and their minima line up on a straight falling line
+  // (the compute-optimal frontier). (x, y, w, h) is the chart box. o.v[i]: how much of valley i is chalked (0..1, left to
+  // right); o.d[i]: age of minimum i's dot (null = not yet); o.f: how much of the frontier is drawn.
+  const CHALK_Y = '#F4D37A';
+  const ISO = [0, 1, 2, 3].map(i => [.16 + .22 * i, .46 + .14 * i]);         // minima, as fractions of the box
+  const isoAt = (x, y, w, h, i) => [x + ISO[i][0] * w, y + ISO[i][1] * h];
+  // a chalk stroke as a filled ribbon (opaque and crisp, unlike a pale brush stroke)
+  const ribbon = (pts, wd, col) => {
+    if (pts.length < 2) return; const L = [], Rr = [];
+    pts.forEach((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1,
+      nx = -(b[1] - a[1]) / d * wd / 2, ny = (b[0] - a[0]) / d * wd / 2; L.push([p[0] + nx, p[1] + ny]); Rr.push([p[0] - nx, p[1] - ny]); });
+    paint([...L, ...Rr.reverse()], { wash: col, washOp: 255, fill: CHALK_DIM, fillOp: 40, tex: .5, ink: null });
+  };
+  function isoflop(x, y, w, h, o = {}) {
+    inkLine([[x, y - 10], [x, y + h], [x + w + 10, y + h]], 1.8, CHALK, 'charcoal', 0);          // axes
+    letter('loss', x - 30, y + h * .3, 36, CHALK, { ink: false, rot: -Math.PI / 2 });
+    letter('size →', x + w - 50, y + h + 28, 32, CHALK, { ink: false });
+    ISO.forEach(([fx, fy], i) => {
+      const k = (o.v || [])[i] ?? 1; if (k <= 0) return;
+      const N = 24, pts = [];
+      for (let j = 0; j <= N * k; j++) { const q = j / N, dx = (q - .5) * 2; pts.push([x + (fx + dx * .2) * w, y + (fy - .3 * dx * dx) * h]); }
+      if (k < 1) { const q = k, dx = (q - .5) * 2; pts.push([x + (fx + dx * .2) * w, y + (fy - .3 * dx * dx) * h]); }
+      ribbon(pts, 6, CHALK);
+    });
+    const f = o.f ?? 1;
+    if (f > 0) { const p0 = isoAt(x, y, w, h, 0), p3 = isoAt(x, y, w, h, 3), e0 = [lerp(p0[0], p3[0], -.25), lerp(p0[1], p3[1], -.25)], e1 = [lerp(p0[0], p3[0], 1.2), lerp(p0[1], p3[1], 1.2)];
+      ribbon([e0, [lerp(e0[0], e1[0], f), lerp(e0[1], e1[1], f)]], 5, CHALK_Y); }
+    ISO.forEach((_, i) => {
+      const age = (o.d || [])[i] === undefined ? 1 : o.d[i]; if (age == null || age < 0) return;
+      const [px, py] = isoAt(x, y, w, h, i), r = 11 * backOut(clamp(age / .2));
+      paint(ellPts(px, py, r, r, 12, 1), { wash: CHALK_Y, washOp: 255, ink: PAL.ink, sw: .6 });
+      chalkPuff(px, py, age, 30);
+    });
+  }
+
   // ---------------- 97.55 - 103.8: the professor waddles to the podium, fixes its hat, taps the board ----------------
   const ARRIVE = bt(214), FIX = bt(215), TAPS = [bt(217), bt(218), bt(219), bt(220), bt(221)];
   function lecture(t, lt) {
@@ -195,8 +231,8 @@
     hall(t);
     board(240, 110, 1180, 470, t);
     // the line on the board, already drawn; each tap makes a chalk dot pop on it
-    inkLine([[290, 540], [1380, 150]], 5, PAL.clay, 'ink', 0);
-    const tapAt = i => { const px = 1180 + i * 40; return [px, 540 - (px - 290) * 390 / 1090]; };
+    inkLine([[295, 150], [1385, 520]], 5, PAL.clay, 'ink', 0);                // the loss falls: upper-left to lower-right
+    const tapAt = i => { const px = 1180 + i * 40; return [px, 150 + (px - 295) * 370 / 1090]; };
     TAPS.forEach((tp, i) => { const age = t - tp, [px, py] = tapAt(i);
       if (age >= 0) paint(ellPts(px, py, 13 * backOut(age / .2), 13 * backOut(age / .2), 12, 1), { wash: CHALK, ink: PAL.ink, sw: .6 }); chalkPuff(px, py, age); });
     // waddle in from the right; one step per beat
@@ -288,6 +324,10 @@
     camBegin(960 + sx, 520 + sy, lerp(1.04, 1, ease(lt / 4.6)));
     hall(t);
     board(140, 70, 1640, 470, t, { grid: false });
+    // the IsoFLOP valleys chalk themselves in, one per scoop; on the frantic beats each minimum gets a dot, and as the
+    // beam levels the frontier runs through them
+    isoflop(210, 95, 680, 200, { v: [0, 1, 2, 3].map(i => seg(t, scoopTime(i) - .05, scoopTime(i) + .3)),
+      d: [0, 1, 2, 3].map(i => t - bt(226 + i)), f: ease(seg(t, bt(229) + .1, BAL)) });
     letter('20 : 1', 1300, 170, 100, CHALK, { ink: false, pop: seg(t, BAL, BAL + .25) * 1.2, rot: -.04 });
     const balanced = t > BAL - .05;
     balance(t, th, (x, y) => {
@@ -322,7 +362,7 @@
     }
     // the tally: one chalk number per scoop
     if (n > 0 && t < BAL) letter('×' + n, panX + 20, panY - 170 - 9 * n, 54 + n, CHALK, { pop: clamp((t - scoopTime(n - 1)) * 8) + .3, rot: .06 });
-    if (t >= BAL && t < BAL + .7) sfx('DING!', 640, 220, 90, PAL.ochre, t - BAL, { life: .7 });
+    if (t >= BAL && t < BAL + .7) sfx('DING!', 1010, 110, 80, PAL.ochre, t - BAL, { life: .7 });
     camEnd();
   }
 
@@ -362,13 +402,24 @@
       const x0 = Math.max(cx + 120, 640), x1 = 1300;
       if (x1 > x0) paint([[x0, 180], [x1, 190], [x1 + 20, 320], [x0, 310]], { fill: CHALK_DIM, fillOp: 90, bleed: .3, tex: .7, ink: null, hatch: { d: 14, a: .1, o: { rand: .4 }, b: 'charcoal', c: CHALK_DIM, w: .7 } });
     }
+    // the IsoFLOP chart from the diet shot, still on the board; after the landing the pointer taps each minimum
+    const TAP2 = [0, 1, 2, 3].map(i => NEW + i * BEAT / 2), IX = 220, IY = 105, IW = 460, IH = 290;
+    isoflop(IX, IY, IW, IH, { d: TAP2.map(tp => t >= tp ? t - tp : 1) });
     if (t > NEW) letter('20 : 1', 1010, 260, 150, CHALK, { ink: false, pop: seg(t, NEW, NEW + .3), rot: -.04 });
     flushLetters();                                              // the chalk sits on the board, under the leaping professor
     abacus(t, 770, 470, t < LEAP);
     const fast = t < LEAP;
-    chinchilla(cx, cy, 24, { flip: t < LEAP ? true : t < LAND, rot: leaping ? -.35 * (1 - lk * 2) : 0, sq: leaping ? -.12 : .05 * pulse(t, 8),
+    let ptr = null, aRp = null;
+    if (t > LAND + .05) {                                         // aim the stick at the next minimum, snapping on each tap
+      let i = 0; while (i < 3 && t >= TAP2[i + 1] - .1) i++;
+      const s = 24, hit = Math.exp(-Math.max(0, t - TAP2[i]) * 9); aRp = 1.0;
+      const paw = [cx + 3.4 * s + 2.35 * s * Math.cos(aRp), cy - 6.7 * s - 2.35 * s * Math.sin(aRp)], [tx, ty] = isoAt(IX, IY, IW, IH, i);
+      const th = Math.atan2(ty - paw[1], tx - paw[0]), d = Math.hypot(tx - paw[0], ty - paw[1]) / s;
+      ptr = pointer(d * (t < TAP2[0] ? .9 : 1 - .06 * (1 - hit)), -aRp - th);
+    }
+    chinchilla(cx, cy, 24, { pawR: ptr || undefined, flip: t < LEAP ? true : t < LAND, rot: leaping ? -.35 * (1 - lk * 2) : 0, sq: leaping ? -.12 : .05 * pulse(t, 8),
       tailA: leaping ? Math.PI - .15 : undefined, tailCurl: leaping ? .02 : undefined, tailLen: leaping ? 2.4 : 1,
-      eyes: fast ? 'focus' : t > NEW ? 'happy' : 'wide', aR: fast ? .9 + .5 * Math.sin(t * 47) : leaping ? 1.3 : -.4, aL: fast ? .9 + .5 * Math.sin(t * 53 + 1) : leaping ? 1.3 : -.3,
+      eyes: fast ? 'focus' : t > NEW ? 'happy' : 'wide', aR: fast ? .9 + .5 * Math.sin(t * 47) : leaping ? 1.3 : aRp ?? -.4, aL: fast ? .9 + .5 * Math.sin(t * 53 + 1) : leaping ? 1.3 : -.3,
       earWig: fast ? Math.sin(t * 40) : 0, tassel: leaping ? 1.2 : Math.sin(t * 20) * .4, hatTilt: leaping ? .25 : 0, seed: 3 });
     if (fast) for (let i = 0; i < 6; i++) { const a = -2.4 + i * .3; inkLine([[1390 + Math.cos(a) * 250, 650 + Math.sin(a) * 250], [1390 + Math.cos(a) * 320, 650 + Math.sin(a) * 320]], 2, PAL.ink, 'ink', 0); }   // busy lines
     if (fast) sfx('clackclackclack', 1030, 420, 46, PAL.clayDk, (t - 108.4) % .8, { life: .8, rot: -.05 });
@@ -405,7 +456,7 @@
       inkLine([pg(f, .02), pg(f, .98)], wgt, col, 'inkfine', 0); inkLine([pg(.02, f), pg(.98, f)], wgt, col, 'inkfine', 0);
     }
     inkLine([pg(.06, .06), pg(.97, .06)], 2, PAL.ink, 'ink', 0); inkLine([pg(.06, .06), pg(.06, .97)], 2, PAL.ink, 'ink', 0);
-    inkLine([pg(.08, .1), pg(.95, .92)], 6, PAL.clay, 'ink', 0);
+    inkLine([pg(.08, .92), pg(.95, .1)], 6, PAL.clay, 'ink', 0);          // falling, like every loss curve
     if (creak) { sfx('CREAK', 700, 330, 70, PAL.clayDk, t - CREAK, { life: POP - CREAK + .1, rot: .08 });
       for (let i = 0; i < 3; i++) inkLine([pg(.06 + i * .02, .1), pg(.07 + i * .02, .5)], .8, PAL.ink, 'inkfine', .3); }
     // the pop-up: a grid panel folds up along the left edge, its front edge is the new axis
@@ -451,7 +502,7 @@
 
   // ---------------- 116.0 - 119.2: every line becomes a track; the lab rides off the edge of the board ----------------
   const RIDE0 = bt(248), EDGE = 118.62;
-  const A = [380, 840], B = [1820, 200];                  // the line, board coords: it runs right off the top-right corner
+  const A = [360, 330], B = [1820, 960];                  // the line, board coords: it falls off the bottom-right corner
   const ANG = Math.atan2(B[1] - A[1], B[0] - A[0]);
   const along = (k, off = 0) => [lerp(A[0], B[0], k) - Math.sin(ANG) * off, lerp(A[1], B[1], k) + Math.cos(ANG) * off];
   // a chalk line turning into a coaster track: ties march along it, then the two rails run out over them
@@ -481,19 +532,19 @@
     pop();
   }
   function coaster(t, lt) {
-    const ride = t < RIDE0 ? 0 : easeIn(seg(t, RIDE0, EDGE)) * .98, off = t > EDGE ? t - EDGE : 0;
+    const ride = .1 + (t < RIDE0 ? 0 : easeIn(seg(t, RIDE0, EDGE)) * .88), off = t > EDGE ? t - EDGE : 0;
     let [px, py] = along(ride);
     if (off > 0) { const v = 2400; px += Math.cos(ANG) * v * off; py += Math.sin(ANG) * v * off + 1800 * off * off; }
-    const z = lerp(1.25, .74, ease(seg(t, 116, EDGE + .1))), [sx, sy] = shakeXY(t, 2 * pulse(t, 8) + 4 * seg(t, 117.5, EDGE));
-    camBegin(lerp(lerp(700, 960, seg(t, 116, 117)), 960, ease(seg(t, 117, EDGE))) + sx, lerp(660, 520, ease(seg(t, 116, EDGE))) + sy, z);
+    const z = lerp(1.05, .74, ease(seg(t, 116, EDGE + .1))), [sx, sy] = shakeXY(t, 2 * pulse(t, 8) + 4 * seg(t, 117.5, EDGE));
+    camBegin(lerp(lerp(820, 960, seg(t, 116, 117)), 960, ease(seg(t, 117, EDGE))) + sx, lerp(520, 520, ease(seg(t, 116, EDGE))) + sy, z);
     hall(t);
     board(140, 60, 1680, 940, t, { grid: false });
     // the other lines on the board turn into tracks one after another
-    [[[220, 940], [1100, 300], 116.0], [[600, 960], [1780, 520], 116.2], [[220, 520], [900, 120], 116.35], [[1100, 960], [1780, 760], 116.5]].forEach(([p0, p1, t0]) => track(p0, p1, t0, t));
+    [[[800, 120], [1780, 560], 116.0], [[220, 600], [900, 980], 116.2], [[200, 960], [740, 640], 116.35], [[1100, 140], [1780, 190], 116.5]].forEach(([p0, p1, t0]) => track(p0, p1, t0, t));
     track(A, B, 116.1, t, true);
     cart(px, py - 28, ANG, t);
-    // the professor cheers from the board's corner
-    chinchilla(1720, 1060, 15, { eyes: 'happy', aR: 1.5 + .4 * Math.sin(t * 9), aL: 1.2, pawR: pointer(8, 0), mouth: 'O', dy: -.6 * Math.abs(Math.sin(bpOf(t) * Math.PI)), seed: 4 });
+    // the professor cheers from the board's bottom-left corner, out of the coaster's way
+    chinchilla(250, 1060, 15, { eyes: 'happy', aR: 1.5 + .4 * Math.sin(t * 9), aL: 1.2, pawR: pointer(8, 0), mouth: 'O', dy: -.6 * Math.abs(Math.sin(bpOf(t) * Math.PI)), seed: 4 });
     if (t > RIDE0 && t < RIDE0 + .8) sfx('WHEEE!', px - 100, py - 260, 70, PAL.ochre, t - RIDE0, { life: .8 });
     camEnd();
     // handoff: a megaphone noses in from the left and squeals; the light turns to dusk

@@ -1,7 +1,7 @@
 // c07_gigawatt.js: 135.04-157.53, bars 73-84. Chorus 2. The gold flood from the broken dam drains away and the
 // festival is ten times bigger: a stage on the roof of the campus, a building-sized lead Clawd in the chrome robot
 // helmet, a crowd of thousands of dots. The loss line is a ski run, lightning lights the town to the horizon, the
-// lead Clawd hugs a power station while the choir pedals generators, and the choir holds up their up-and-right
+// lead Clawd hugs a power station while the choir pedals generators, and the choir holds up their falling-loss
 // placards until everything snaps to black on the last syllable.
 (() => {
   const soft = (c, k = .5) => mixCol(c, PAL.paper, k);
@@ -325,8 +325,10 @@
       paint(ellPts(362, 318, 160, 110, 20, 6), { fill: '#E9FFFB', fillOp: 160, bleed: .3, ink: null });
       paint(band(.7), { wash: '#FFF5E2', washOp: 255, ink: PAL.ink, sw: .9 });
     }
+    // strike bloom round the pylon (a full-frame white flash washed the dark town out to lavender)
+    const bl = Math.exp(-a * 7);
+    if (bl > .05) paint(ellPts(362, 330, 420 * (1.4 - .4 * bl), 300 * (1.4 - .4 * bl), 24, 6), { fill: NEON, fillOp: 120 * bl, bleed: .35, ink: null });
     camEnd();
-    flash(.35 * Math.exp(-a * 9), '#E9FFFB');
     sfx('BZZT!', 600, 230, 120, NEON, a, { life: 1.1, rot: -.12 });
   }
 
@@ -412,16 +414,22 @@
     camEnd();
   }
 
-  // ---------------- 152.38: everyone holds up the up-and-right placards; snap to black on the last syllable ----------------
+  // ---------------- 152.38: everyone holds up the falling-loss placards (mini log-log charts); snap to black on the last syllable ----------------
   function placard(x, y, u, t, i) {
     const lift = -u * (1.2 + 1.2 * pulse(t - i * .03, 6)), cx = x + Math.sin(bpOf(t) * Math.PI + i) * u * .3, cy = y - 13.5 * u + lift;
     inkLine([[x, y - 6 * u], [cx, cy + 2 * u]], 1.6, '#7C4A2C', 'ink', 0);
     paint(rrPts(cx - 4.2 * u, cy - 2.7 * u, 8.4 * u, 5.4 * u, .5 * u, 1), { wash: PAL.cream, washOp: 255, ink: PAL.ink, sw: 1.1 });
-    const ax = cx - 2.6 * u, ay = cy + 1.7 * u, bx = cx + 2.6 * u, by = cy - 1.7 * u, ang = Math.atan2(by - ay, bx - ax);
-    inkLine([[ax, ay], [bx - Math.cos(ang) * u * .8, by - Math.sin(ang) * u * .8]], 4, PAL.clay, 'ink', 0);
-    const hx = bx, hy = by, n = [-Math.sin(ang), Math.cos(ang)];
-    paint([[hx + Math.cos(ang) * u * .4, hy + Math.sin(ang) * u * .4], [hx - Math.cos(ang) * 1.4 * u + n[0] * u, hy - Math.sin(ang) * 1.4 * u + n[1] * u], [hx - Math.cos(ang) * 1.4 * u - n[0] * u, hy - Math.sin(ang) * 1.4 * u - n[1] * u]],
-      { wash: PAL.clay, washOp: 255, ink: PAL.ink, sw: .7 });
+    // a mini log-log chart: ink axes, faint decade lines, and the Line falling thick from upper-left to lower-right
+    const L = cx - 3.2 * u, R = cx + 3.4 * u, Tp = cy - 2.0 * u, B = cy + 1.9 * u, grid = mixCol(PAL.cream, PAL.teal, .55);
+    for (const f of [.33, .66]) {
+      inkLine([[lerp(L, R, f), Tp], [lerp(L, R, f), B]], .6, grid, 'inkfine', 0);
+      inkLine([[L, lerp(Tp, B, f)], [R, lerp(Tp, B, f)]], .6, grid, 'inkfine', 0);
+    }
+    inkLine([[L, Tp - .2 * u], [L, B], [R + .2 * u, B]], 1.4, PAL.ink, 'ink', 0);
+    const ax = L + .5 * u, ay = Tp + .4 * u, bx = R - .3 * u, by = B - .8 * u, ang = Math.atan2(by - ay, bx - ax), n = [-Math.sin(ang) * .42 * u, Math.cos(ang) * .42 * u];
+    paint([[ax - n[0] * 1.8, ay - n[1] * 1.8], [bx - n[0] * 1.8, by - n[1] * 1.8], [bx + n[0] * 1.8, by + n[1] * 1.8], [ax + n[0] * 1.8, ay + n[1] * 1.8]],
+      { fill: PAL.clay, fillOp: 70 + 60 * pulse(t, 5), bleed: .2, ink: null });                                          // glow
+    paint([[ax - n[0], ay - n[1]], [bx - n[0], by - n[1]], [bx + n[0], by + n[1]], [ax + n[0], ay + n[1]]], { wash: PAL.clay, washOp: 255, ink: PAL.ink, sw: .6 });
   }
   function finale(t, lt, dur) {
     if (t >= BLACK) { flash(1, PAL.ink); return; }

@@ -2,7 +2,7 @@
 // we'd hit a wall: the wall is a painted sheet that blows off and lands on them. Data's gone: a photocopier fountains
 // books onto the shelves and buries them. Money's dry: a moth flies out of a wallet. Kick out: a dump truck tips a
 // mountain of gold on them. Then the real wall, enormous; the line presses into it through the snare roll and on
-// 75.06 punches a line-shaped hole, bricks flying at camera (chapter 4 opens through that hole).
+// 75.06 punches a line-shaped hole (bricks gone around the line, like the album cover), bricks flying out down the line (chapter 4 opens through that hole).
 (() => {
   const soft = (c, k = .5) => mixCol(c, PAL.paper, k);
   const { GRID, SAND, STEEL, STEEL_DK, HARD, labCoat } = SL;
@@ -125,7 +125,7 @@
     const [sx, sy] = shakeXY(t, 2 * bump(t) + 6 * seg(t, LAND, LAND + .05) * (1 - seg(t, LAND + .05, LAND + .3)));
     camBegin(1000 + sx, 590 + sy - 10 * ease(seg(t, T1, OFF_T)), lerp(1.24, 1.16, ease(seg(t, T1, T2))) + .012 * bump(t));
     sky(822, { sunX: 1250 });
-    lineBand([-100, 960], [2050, 150], 26);
+    lineBand([-100, 150], [2050, 960], 26);                                     // the loss falls, left to right, behind the sheet
     ground(822);
     // the choir on a riser to the right, shouting back on "there is no wall"
     const shout = seg(t, 60.92, 61.0) * (1 - seg(t, 62.6, 62.7));
@@ -344,13 +344,13 @@
   }
 
   // ---------------- 70.15: "They said we'd hit a wall..." the real one ----------------
-  const P = [1000, 520], DIR = [.924, -.383], BRK = { w: 128, h: 52, top: -200, bot: 900 };
+  const P = [1000, 520], DIR = [.924, .383], BRK = { w: 128, h: 52, top: -200, bot: 900 };
   const SMASH0 = END - .14;
   const rate = t => t < barT(39) ? 1 : t < barT(40) ? 2 : t < barT(40) + 2 * BEAT ? 4 : 8;   // the snare roll speeds up
   const roll = t => Math.exp(-frac(bpOf(t) * rate(t)) * 5);
   const build = t => seg(t, T5, SMASH0);
-  const camAt = t => kf(t, [[T5, [960, 600, 1.12]], [barT(39), [960, 330, .62]], [SMASH0, [P[0] + 60, P[1] - 10, 2.3]], [END, [P[0] + 60, P[1] - 10, 2.45]]],
-    x => x < 0 ? 0 : ease(x));
+  const camAt = t => kf(t, [[T5, [960, 600, 1.12]], [barT(39), [960, 330, .62]], [SMASH0, [P[0] + 20, P[1] + 22, 2.3]], [END, [P[0], P[1] + 70 / 2.45, 2.45]]],
+    x => x < 0 ? 0 : ease(x));                                                                 // ends with P on screen at c04's HC (960, 470)
   const crackPath = (ang, L, seed) => {                                                        // a jagged crack out from the impact point
     const pts = [[P[0], P[1]]], n = Math.max(1, Math.floor(L / 40));
     for (let i = 1; i <= n; i++) {
@@ -367,32 +367,56 @@
     });
     return L.concat(Rr.reverse());
   };
-  function bigWall(t, view) {
+  // the hole, like the album cover: bricks gone wherever they sit close to the line, widest at the impact point
+  const loc = (x, y) => { const dx = x - P[0], dy = y - P[1]; return [dx * DIR[0] + dy * DIR[1], -dx * DIR[1] + dy * DIR[0]]; };
+  const at = (d, o) => [P[0] + DIR[0] * d - DIR[1] * o, P[1] + DIR[1] * d + DIR[0] * o];
+  const holeGeo = k => ({ a: 150 + 150 * k, b: 260 + 900 * easeOut(k), w: 18 + 42 * easeOut(k), k });
+  const holeHW = (d, g) => g.w * (1 + 1.2 * Math.exp(-(d / 170) * (d / 170))) * clamp((d + g.a) / 140) * clamp((g.b - d) / 180);
+  const brickCol = (r, c) => mixCol('#A9493A', '#CF7650', hash(r * 37 + c));
+  function bigWall(t, view, g) {
+    const gone = [], ring = [];
     paint(rectPts(-1400, BRK.top, W + 2800, BRK.bot - BRK.top), { wash: '#6E3A34', washOp: 255, ink: null });             // mortar
     for (let r = 0; BRK.top + r * BRK.h < BRK.bot; r++) {
       const y = BRK.top + r * BRK.h; if (y > view[3] || y + BRK.h < view[1]) continue;
       for (let c = -14; c < 30; c++) {
         const x = c * BRK.w + (r % 2 ? BRK.w / 2 : 0) - 700; if (x > view[2] || x + BRK.w < view[0]) continue;
-        paint(rectPts(x + 4, y + 4, BRK.w - 8, BRK.h - 8, 1.2), { wash: mixCol('#A9493A', '#CF7650', hash(r * 37 + c)), washOp: 255, ink: null });
+        if (g) {
+          const [d, o] = loc(x + BRK.w / 2, y + BRK.h / 2), hw = holeHW(d, g) + 30 * (hash(r * 13 + c * 7) - .5) * g.k;
+          if (hw > 8 && Math.abs(o) < hw) { gone.push([x, y, r, c, d, o]); continue; }
+          if (hw > 8 && Math.abs(o) < hw + 90) ring.push([x, y, r, c, o]);
+        }
+        paint(rectPts(x + 4, y + 4, BRK.w - 8, BRK.h - 8, 1.2), { wash: brickCol(r, c), washOp: 255, ink: null });
         if (view[2] - view[0] < 1400 && hash(r * 11 + c * 3) > .7) paint(rectPts(x + 8, y + 6, BRK.w * .5, 6), { wash: '#E39A72', washOp: 150, ink: null });   // lit top edge
       }
     }
     paint(rectPts(-1400, BRK.top - 26, W + 2800, 30, 2), { wash: '#8C5446', washOp: 255, ink: null });                     // coping
     paint(rectPts(-1400, BRK.bot - 260, W + 2800, 260), { fill: PAL.night, fillOp: 70, bleed: .2, tex: .4, ink: null });    // shade at the foot
     paint(rectPts(-1400, BRK.top, W + 2800, 220), { fill: PAL.rose, fillOp: 60, bleed: .2, tex: .4, ink: null });           // dusk on the top
+    return { gone, ring };
   }
-  function hole(t, k) {                                                                         // the line-shaped hole and the night beyond
-    const a = 160 + 120 * k, b = 260 + 900 * easeOut(k), w = 40 + 170 * easeOut(k), pts = [];
-    const n = 12, at = (d, o) => [P[0] + DIR[0] * d - DIR[1] * o, P[1] + DIR[1] * d + DIR[0] * o];
-    for (let i = 0; i <= n; i++) pts.push(at(lerp(-a, b, i / n), -w / 2 - 34 * hash(i * 5.3) * k));
-    pts.push(at(b + 60 * k, 0));
-    for (let i = n; i >= 0; i--) pts.push(at(lerp(-a, b, i / n), w / 2 + 34 * hash(i * 2.9) * k));
-    pts.push(at(-a - 40, 0));
-    paint(pts, { wash: '#1C1A3E', washOp: 255, fill: PAL.violet, fillOp: 120, bleed: .2, tex: .5, ink: null });
-    // a glimpse of the festival: teal beams and stars through the gap
-    for (const [bx, sk] of [[P[0] + 120, -.4], [P[0] + 360, .3]]) paint([[bx - 4, P[1] + 200], [bx + 4, P[1] + 200], [bx + 120 * sk + 22, P[1] - 400], [bx + 120 * sk - 22, P[1] - 400]], { wash: '#3FF0D8', washOp: 110 * k, ink: null });
-    for (let i = 0; i < 10; i++) { const d = lerp(-a, b, hash(i * 3.3)), o = (hash(i * 8.1) - .5) * w * .8, [x, y] = at(d, o); paint(starPts(x, y, 6, .35), { wash: PAL.cream, washOp: 255, ink: null }); }
-    lineBand(P, at(b + 60, 0), 34, .6);                                                         // the line carries on through
+  function hole(t, g, cut) {                                                                    // the night festival through the gap
+    const NIGHT = '#1C1A3E';
+    for (const [x, y, r, c] of cut.gone) paint(rectPts(x - 3, y - 3, BRK.w + 6, BRK.h + 6), { wash: mixCol(NIGHT, '#2A2058', hash(r * 5 + c * 3) * .6), washOp: 255, ink: null });
+    // stage glow low in the gap, teal beams sweeping across it, stars
+    const hw0 = holeHW(0, g);
+    paint(ellPts(...at(60, hw0 * .55), hw0 * 1.3, hw0 * .5, 18, 4), { fill: '#9A4FD0', fillOp: 120 * g.k, bleed: .3, ink: null });
+    for (let i = 0; i < 4; i++) {
+      const d = lerp(-80, g.b * .8, i / 3), hw = holeHW(d, g) * .95, sk = (i % 2 ? 1 : -1) * (.25 + .2 * Math.sin(t * 3 + i));
+      const A = at(d, hw), B = at(d + sk * hw * 1.4, -hw);
+      paint([[A[0] - 5, A[1]], [A[0] + 5, A[1]], [B[0] + 18, B[1]], [B[0] - 18, B[1]]], { wash: '#3FF0D8', washOp: 120 * g.k, ink: null });
+    }
+    cut.gone.forEach(([x, y, r, c], i) => { if (hash(i * 3.3 + r) > .55) paint(starPts(x + BRK.w * hash(c * 1.7 + r), y + BRK.h * hash(r * 2.9 + c), 5 + 3 * hash(i), .35), { wash: PAL.cream, washOp: 255, ink: null }); });
+    // the bricks at the rim, redrawn on top so the gap's edge is a ragged brick staircase; some chipped
+    for (const [x, y, r, c, o] of cut.ring) {
+      paint(rectPts(x, y, BRK.w, BRK.h), { wash: '#6E3A34', washOp: 255, ink: null });
+      paint(rectPts(x + 4, y + 4, BRK.w - 8, BRK.h - 8, 1.2), { wash: brickCol(r, c), washOp: 255, ink: null });
+      if (hash(r * 3 + c * 17) > .45) {                                                        // a bite out of the side facing the line
+        const sx = hash(r + c * 5) > .5 ? x + BRK.w : x, sy = o > 0 ? y : y + BRK.h, fx = sx === x ? 1 : -1, fy = sy === y ? 1 : -1, s = .5 + .4 * hash(r * 7 + c);
+        paint([[sx, sy], [sx + fx * BRK.w * .6 * s, sy], [sx + fx * BRK.w * .3 * s, sy + fy * BRK.h * .35], [sx + fx * BRK.w * .12, sy + fy * BRK.h * .8 * s], [sx, sy + fy * BRK.h * s]],
+          { wash: NIGHT, washOp: 255, ink: null });
+      }
+    }
+    lineBand(P, at(g.b + 400, 0), 34, .6);                                                      // the line carries on through
   }
   function wall(t, lt) {
     const B = build(t), hit = roll(t), [cx, cy, z] = camAt(t), k = seg(t, SMASH0, END);
@@ -400,7 +424,7 @@
     camBegin(cx + sx / z, cy + sy / z, z * (1 + .006 * hit * B));
     const hw = 1000 / z, hh = 580 / z, view = [cx - hw, cy - hh, cx + hw, cy + hh];
     sky(BRK.bot, { dark: .35, sun: false, grid: z < 1.4, sunX: 960 });
-    bigWall(t, view);
+    const g = k > 0 ? holeGeo(k) : null, cut = bigWall(t, view, g);
     ground(BRK.bot, -1400, W + 1400);
     // cracks radiate from where the line presses in, growing with the roll; warm light leaks through near the end
     const L = 30 + 620 * Math.pow(B, 1.6) * (.9 + .1 * hit);
@@ -417,11 +441,11 @@
         }
       }
     }
-    if (k > 0) hole(t, k);
+    if (g) hole(t, g, cut);
     // the line, pressing into the wall; its tip glows hotter with every snare hit
-    lineBand([-700, 1000 + 1700 * .414], P, 34 + 18 * (1 - seg(z, 1, 2)), 1 + B);
-    const g = 40 + 40 * B + 30 * hit * B;
-    if (k < .5) { paint(ellPts(P[0], P[1], g * 1.4, g * 1.4, 20, 2), { fill: PAL.ochre, fillOp: 130, bleed: .3, ink: null }); paint(ellPts(P[0], P[1], 20, 20, 14), { wash: PAL.cream, washOp: 255, ink: null }); }
+    lineBand(at(-2700, 0), P, 34 + 18 * (1 - seg(z, 1, 2)), (1 + B) * (1 - .8 * k));
+    const gl = 40 + 40 * B + 30 * hit * B;
+    if (k < .5) { paint(ellPts(P[0], P[1], gl * 1.4, gl * 1.4, 20, 2), { fill: PAL.ochre, fillOp: 130, bleed: .3, ink: null }); paint(ellPts(P[0], P[1], 20, 20, 14), { wash: PAL.cream, washOp: 255, ink: null }); }
     // falling dust from the mortar on each hit
     if (B > .1) for (let i = 0; i < 14; i++) { const ph = frac(t * 1.3 + hash(i)), x = P[0] + (hash(i * 5.5) - .5) * L * 1.6, y = P[1] - 200 + ph * 500; paint(ellPts(x, y, 4 + 3 * hash(i), 4 + 3 * hash(i), 6), { wash: '#C99A80', washOp: 220 * (1 - ph) * B, ink: null }); }
     // the Skeptics, tiny on top of the wall, one last time through the megaphones
@@ -435,11 +459,13 @@
     // SMASH: bricks burst out of the hole at the camera
     if (k > 0) {
       const ps = [W / 2 + (P[0] - cx) * z, H / 2 + (P[1] - cy) * z], ke = easeOut(k);
-      for (let i = 0; i < 22; i++) {
-        const along = (hash(i * 3.1) - .3) * 500, o = [ps[0] + DIR[0] * along, ps[1] + DIR[1] * along];
-        const ang = hash(i * 7.3) * TAU, sp = 500 + 900 * hash(i * 1.9), s = 1 + ke * (2 + 5 * hash(i * 4.2));
-        const x = o[0] + Math.cos(ang) * sp * ke, y = o[1] + Math.sin(ang) * sp * ke * .8;
-        push(); translate(x, y); rotate((hash(i) - .5) * 6 * ke); scale(s);
+      const dA = Math.atan2(DIR[1], DIR[0]);
+      for (let i = 0; i < 24; i++) {                                                           // out of the far side, down the line, like the cover
+        const along = (hash(i * 3.1) - .25) * 420, side = (hash(i * 5.7) - .5) * 160, o = [ps[0] + (DIR[0] * along - DIR[1] * side) * z * .5, ps[1] + (DIR[1] * along + DIR[0] * side) * z * .5];
+        const ang = i % 4 === 3 ? hash(i * 7.3) * TAU : dA + (hash(i * 7.3) - .5) * 1.8, sp = 500 + 900 * hash(i * 1.9), s = 1 + ke * (1.2 + 3.5 * hash(i * 4.2));
+        const x = o[0] + Math.cos(ang) * sp * ke, y = o[1] + Math.sin(ang) * sp * ke;
+        for (let j = 0; j < 2; j++) { const tr = 70 + 120 * ke, off = (j - .5) * 22 * s; inkLine([[x - Math.cos(ang) * 50 * s - Math.sin(ang) * off, y - Math.sin(ang) * 50 * s + Math.cos(ang) * off], [x - Math.cos(ang) * (50 * s + tr) - Math.sin(ang) * off, y - Math.sin(ang) * (50 * s + tr) + Math.cos(ang) * off]], 1.2, PAL.ink, 'inkfine', 0); }
+        push(); translate(x, y); rotate(dA * .3 + (hash(i) - .5) * 6 * ke); scale(s);
         paint(rectPts(-38, -14, 76, 28, 1), { wash: mixCol('#A9493A', '#CF7650', hash(i * 9)), washOp: 255, ink: PAL.ink, sw: 1.4 });
         paint(rectPts(-38, 8, 76, 6), { wash: '#6E3A34', washOp: 255, ink: null });
         pop();

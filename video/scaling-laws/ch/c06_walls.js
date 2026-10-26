@@ -95,46 +95,68 @@
   }
 
   // ======================= 119.2 – 122.39: three walls, one skewer =======================
+  // the line comes in from the upper left over the Skeptics' hats and drives DOWN through three walls that step down with it
   const S1 = 119.2, HIT = [bt(257), bt(258), bt(259)], HZ1 = 840;
-  const WALLS = [{ x: 860, w: 230, top: 500 }, { x: 1220, w: 240, top: 400 }, { x: 1580, w: 250, top: 300 }];
-  const LA = [-100, 1000], LD = [2200, -750], LN = Math.hypot(...LD), LDN = [LD[0] / LN, LD[1] / LN];
-  const lineY = x => LA[1] + (x - LA[0]) * LD[1] / LD[0];
-  const BRICK = ['#A8553A', '#B8664A', '#94472F', '#B05A3E'];
-  // a wall, split along the line wherever the tip has already been: a ragged line-shaped gap with the dark beyond
-  const GAP = 42;                                                                     // gap half-height around the line
-  const gapEdge = (i, x, side) => lineY(x) + side * GAP * (.75 + .5 * hash(i * 13 + Math.round(x / 18) * 7 + (side > 0 ? 3 : 0)));
+  const WALLS = [{ x: 860, w: 230, top: 170 }, { x: 1220, w: 240, top: 315 }, { x: 1580, w: 250, top: 455 }];
+  const SLOPE = 140 / 360, lineY = x => 380 + (x - 860) * SLOPE, LA = [-400, lineY(-400)];
+  const LANG1 = Math.atan(SLOPE);
+  const BRICK = ['#A8553A', '#B8664A', '#94472F', '#B05A3E'], MORTAR = '#5A3A34';
+  // the hole: bricks gone out to a ragged radius; the mortar behind breaks a little closer in, so a dark broken rim
+  // frames a slot of open sky the line passes through
+  const backEdge = (i, x, side) => lineY(x) + side * (50 + 16 * hash(i * 13 + Math.round(x / 14) * 7 + (side > 0 ? 3 : 0)));
+  const tipXAt = t => kf(t, [[S1, 560], [barT(65) - .1, 600], [HIT[0], 1010], [HIT[1], 1375], [HIT[2], 1740], [HIT[2] + .5, 1930]], ease);
   function wall(i, t, tipX) {
-    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, cut = Math.min(x1 + 30, tipX);
+    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, cut = Math.min(x1, tipX);
     const jolt = age > 0 ? Math.sin(age * 30) * Math.exp(-age * 7) : 0;
-    push(); translate(w.x, HZ1); rotate(jolt * .04); translate(-w.x + jolt * 10, -HZ1);
-    paint(rectPts(x0, w.top, w.w, HZ1 - w.top, 2), { wash: '#5A3A34', washOp: 255, ink: PAL.ink, sw: 1.3 });
-    if (cut > x0) {                                                                   // the gap, drawn under the bricks so they break its edge
-      const xs = []; for (let x = x0 - 6; x < cut; x += 18) xs.push(x); xs.push(cut);
-      paint(xs.map(x => [x, gapEdge(i, x, -1)]).concat(xs.slice().reverse().map(x => [x, gapEdge(i, x, 1)])),
-        { wash: '#1E1426', washOp: 255, fill: PAL.violet, fillOp: 50, tex: .4, ink: PAL.ink, sw: 1.1 });
+    push(); translate(w.x, HZ1); rotate(jolt * .015); translate(-w.x + jolt * 8, -HZ1);
+    // the mortar backing, with the slot cut out behind the tip
+    const ink = { wash: MORTAR, washOp: 255, fill: PAL.night, fillOp: 30, tex: .4, ink: PAL.ink, sw: 1.3 };
+    if (cut <= x0) paint(rectPts(x0, w.top, w.w, HZ1 - w.top, 2), ink);
+    else {
+      const xs = []; for (let x = x0; x < cut - 4; x += 14) xs.push(x); xs.push(cut);
+      const up = xs.map(x => [x, backEdge(i, x, -1)]), dn = xs.map(x => [x, backEdge(i, x, 1)]);
+      if (cut >= x1) {                                  // pierced right through: two pieces
+        paint([[x0, w.top], [x1, w.top], ...up.slice().reverse()], ink);
+        paint([...dn, [x1, HZ1], [x0, HZ1]], ink);
+      } else paint([[x0, w.top], [x1, w.top], [x1, HZ1], [x0, HZ1], ...dn, [Math.min(cut + 30, x1 - 2), lineY(Math.min(cut + 30, x1 - 2))], ...up.slice().reverse()], ink);
     }
     const bh = 34, bw = 62;
     for (let r = 0, y = HZ1 - bh; y > w.top - 1; r++, y -= bh) {
       for (let x = x0 + (r % 2 ? -bw / 2 : 0); x < x1; x += bw) {
         const a = Math.max(x, x0) + 2, b = Math.min(x + bw, x1) - 2; if (b - a < 8) continue;
-        const mx = (a + b) / 2, my = y + bh / 2;
-        if (mx < cut && my > gapEdge(i, mx, -1) - bh * .25 && my < gapEdge(i, mx, 1) + bh * .25) continue;   // knocked out
-        paint(rectPts(a, y + 2, b - a, bh - 4, 1), { wash: BRICK[Math.floor(hash(i * 97 + r * 13 + x) * 4)], washOp: 255, ink: null });
+        const mx = (a + b) / 2, my = y + bh / 2, hb = hash(i * 97 + r * 13 + x);
+        if (a < cut && Math.abs(my - lineY(mx)) < 82 + 34 * hash(i * 7 + r * 3 + x * .1)) continue;   // knocked out
+        paint(rectPts(a, y + 2, b - a, bh - 4, 1), { wash: BRICK[Math.floor(hb * 4)], washOp: 255, ink: null });
       }
     }
     paint(rectPts(x0 - 6, w.top - 14, w.w + 12, 16, 2), { wash: '#8C6A5A', washOp: 255, ink: PAL.ink, sw: 1 });        // coping
-    if (age > 0 && age < .5) paint(ellPts(x1, lineY(x1), 110 * easeOut(age * 3), 110 * easeOut(age * 3), 20, 4), { fill: GOLD, fillOp: 180 * (1 - age * 2), bleed: .3, ink: null });
+    // cracks running out from the hole into the bricks
+    if (cut > x0 + 20) for (let k = 0; k < 6; k++) {
+      const cx = x0 + 20 + (Math.min(cut, x1) - x0 - 40) * hash(i * 5 + k), s = k % 2 ? 1 : -1, pts = [[cx, lineY(cx) + s * 92]];
+      for (let j = 1; j < 4; j++) pts.push([cx + 18 * (hash(i + k * 3 + j) - .5) * j, lineY(cx) + s * (92 + j * (26 + 14 * hash(k + j * 5)))]);
+      inkLine(pts, 1, PAL.ink, 'inkfine', 0);
+    }
     pop();
-    return { age };
+    return { x0, x1, cut, age };
+  }
+  // the line inside the wall sits in the hole's shadow, so it reads as passing through, not lying on top
+  function tunnelShade(i, cut) {
+    const w = WALLS[i], x0 = w.x - w.w / 2, x1 = Math.min(cut, w.x + w.w / 2); if (x1 <= x0) return;
+    const h = 21;
+    paint([[x0, lineY(x0) - h], [x1, lineY(x1) - h], [x1, lineY(x1) + h], [x0, lineY(x0) + h]], { fill: '#1E1426', fillOp: 120, bleed: .05, ink: null });
   }
   function debris(i, t) {
-    const w = WALLS[i], age = t - (HIT[i] - .05); if (age < 0 || age > 1.2) return;
+    const w = WALLS[i], age = t - (HIT[i] - .05); if (age < 0 || age > 1.3) return;
     const x0 = w.x + w.w / 2, y0 = lineY(x0);
-    for (let k = 0; k < 12; k++) {
-      const h1 = hash(i * 31 + k), h2 = hash(i * 17 + k * 5 + 3), vx = 250 + 650 * h1, vy = -350 - 650 * h2;
-      const x = x0 + vx * age, y = y0 + vy * age + 1500 * age * age; if (y > HZ1 + 60) continue;
+    // a gold spark and dust bursting off the far face
+    if (age < .35) paint(ellPts(x0, y0, 120 * easeOut(age * 3), 120 * easeOut(age * 3), 20, 4), { fill: GOLD, fillOp: 190 * (1 - age / .35), bleed: .3, ink: null });
+    if (age < .6) paint(ellPts(x0 + 60 * easeOut(age * 2), y0, 40 + 140 * easeOut(age * 2), 30 + 110 * easeOut(age * 2), 18, 6), { fill: '#D8C2B0', fillOp: 150 * (1 - age / .6), bleed: .3, ink: null });
+    for (let k = 0; k < 16; k++) {
+      const h1 = hash(i * 31 + k), h2 = hash(i * 17 + k * 5 + 3), ang = LANG1 + (h2 - .5) * 1.8, sp = 500 + 800 * h1;
+      const x = x0 + Math.cos(ang) * sp * age, y = y0 + Math.sin(ang) * sp * age - 250 * age + 1500 * age * age; if (y > HZ1 + 40) continue;
+      const s = k < 10 ? 1 : .55;
       push(); translate(x, y); rotate(age * (6 + 8 * h1) * (k % 2 ? 1 : -1));
-      paint(rectPts(-15, -8, 30, 16, 1), { wash: BRICK[k % 4], washOp: 255, ink: PAL.ink, sw: .8 });
+      paint(rectPts(-15 * s, -8 * s, 30 * s, 16 * s, 1), { wash: BRICK[k % 4], washOp: 255, ink: PAL.ink, sw: .8 });
       pop();
     }
   }
@@ -152,11 +174,11 @@
     dusk(-200, HZ1);
     logGrid(-200, W + 200, -300, HZ1, 520, mixCol(D_MID, GRID, .45), .5);
     ground(HZ1);
-    const tipX = kf(t, [[S1, 560], [barT(65) - .1, 600], [HIT[0], 925], [HIT[1], 1285], [HIT[2], 1655], [HIT[2] + .5, 1860]], ease);
-    const tip = [tipX, lineY(tipX)];
-    // the walls split open along the line behind the tip, then the line itself lies in the gaps
+    const tipX = tipXAt(t), tip = [tipX, lineY(tipX)];
+    // the walls get a line-shaped hole punched behind the tip; the line runs through the holes, shaded inside the wall
     WALLS.forEach((_, i) => wall(i, t, tipX));
     beam(LA, tip, 46, 1 + .4 * pulse(t, 5));
+    WALLS.forEach((_, i) => tunnelShade(i, tipX));
     WALLS.forEach((_, i) => debris(i, t));
     // Skeptics on the rock ledge, megaphones at the walls
     rock(-80, 560, 620, 420);
@@ -173,7 +195,7 @@
     choirRow(t, 905, 10, 700, 1800, 9, seg(t, bt(258) - .05, bt(258) + .05));
     camEnd();
     if (lt < .7) sfx('SKREEE', 640, 330, 70, PAL.cream, lt, { life: .7, rot: -.1 });
-    HIT.forEach((h, i) => { if (t >= h - .05 && t < h + .55) sfx(i < 2 ? 'THUNK' : 'THUNK!', WALLS[i].x + 70, lineY(WALLS[i].x) - 150 - 40 * i, 60 + 18 * i, PAL.cream, t - h + .05, { life: .55, rot: -.12 + .1 * i }); });
+    HIT.forEach((h, i) => { if (t >= h - .05 && t < h + .55) sfx(i < 2 ? 'THUNK' : 'THUNK!', WALLS[i].x + 40, WALLS[i].top - 80 - 10 * i, 60 + 18 * i, PAL.cream, t - h + .05, { life: .55, rot: -.12 + .1 * i }); });
   }
 
   // ======================= 122.39 – 126.0: the book factory buries the Skeptics =======================
@@ -332,7 +354,8 @@
   const feetY = k => GROUND - 8 * BU - k * STRIDE;       // where climber k stands
   // height of the tower top (feet of the next climber), eased as each one lands
   const towerTop = t => { let y = feetY(0) + 0; for (let k = 0; k < NCL; k++) y -= STRIDE * ease(seg(t, land(k) - .05, land(k) + .2)); return y; };
-  const LANG = .25, DIR = [Math.cos(LANG), -Math.sin(LANG)], LLEN = 1450;
+  // the line slopes DOWN from the tower top toward the dam; it tilts steeper as the tower lifts its tail (still dead straight)
+  const LLEN = 1450, lAng = t => lerp(.06, .25, clamp((feetY(0) - towerTop(t)) / (NCL * STRIDE)));
   function damScene(t, zinv) {
     dusk(-3200, 1000, -3000, 6500);
     logGrid(-3000, 6500, -3600, 1000, 1400, mixCol(D_MID, GRID, .4), .8);
@@ -428,7 +451,8 @@
     // the line, held by the top of the tower; wind up, then thrust
     const tailFeet = Math.min(towerTop(t), feetY(0));
     const wind = ease(seg(t, IMPACT - .55, IMPACT - .12)), thrust = easeIn(seg(t, IMPACT - .12, IMPACT));
-    const push_ = 180 * wind - 600 * thrust, tail = [BASE_X + 40 - DIR[0] * push_, tailFeet - 40 - DIR[1] * push_];
+    const DIR = [Math.cos(lAng(t)), Math.sin(lAng(t))], lift = 92 + 100 * (1 - seg(t, land(0) - .05, land(0) + .2));  // resting on the top hard hat
+    const push_ = 180 * wind - 600 * thrust, tail = [BASE_X + 40 - DIR[0] * push_, tailFeet - lift - DIR[1] * push_];
     const tip = [tail[0] + DIR[0] * LLEN, tail[1] + DIR[1] * LLEN];
     if (pre > 0) cracks([tip[0] + 30, tip[1]], t, .6 * pre * (.75 + .25 * roll));
     beam([tail[0] - DIR[0] * 3000, tail[1] - DIR[1] * 3000], tip, 70, 1 + 1.5 * pre);

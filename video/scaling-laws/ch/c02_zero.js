@@ -1,4 +1,4 @@
-// c02_zero.js: 37.57-59.1, bars 21-32 (verse 1, "Add a zero"). Clawd climbs the line a decade at a time: at 10²³ it
+// c02_zero.js: 37.57-59.1, bars 21-32 (verse 1, "Add a zero"). Clawd rides the line down the loss a decade at a time: at 10²³ it
 // is small and writes a heart-covered poem that the Researcher pins on a fridge; at 10²⁵ it is person-sized, typing
 // with four arms while the Researcher is rolled off into a hammock; then it jumps through zero-hoops, a size bigger
 // each time, and a carpenter checks the line with a spirit level. Last, it hugs a roll of paper, erases a wobble at
@@ -6,7 +6,9 @@
 (() => {
   const soft = (c, k = .5) => mixCol(c, PAL.paper, k);
   const { NIGHT, GRID, STEEL, STEEL_DK, HARD, labCoat } = SL;
-  const S = .16, ANG = Math.atan(S);                       // the line's slope on the paper
+  const S = .16, ANG = Math.atan(S);                       // the line's slope on the paper (falling: loss goes down)
+  // shots 2-4 keep the line as a level floor in world space and tilt the camera by ANG, so on screen the grid is square
+  // and the line descends left to right (characters lean with it; the spirit level lies along the line)
   const WARM = '#5A3A2C', HEART = '#E2476E', WOOD = '#9A6440', WOOD_DK = '#6E4228';
   const bgCol = w => mixCol(NIGHT, WARM, w);
   const gridCol = (w, a) => mixCol(bgCol(w), mixCol(GRID, PAL.ochre, w * .5), a);
@@ -66,7 +68,7 @@
   }
 
   // ---------------- 37.57 – 44.6: 10²³, the poem ----------------
-  const LY1 = x => 900 - S * x, X23 = 560, X24 = 1460, X25 = 2360;
+  const LY1 = x => 720 + S * x, X23 = 560, X24 = 1460, X25 = 2360;
   function fridge(x0, x1, base) {
     const h = 400, w = x1 - x0, top = base - h, door = top + h * .36;
     paint(rrPts(x0, top, w, h, 24, 2), { wash: '#E4DED0', washOp: 255, fill: PAL.sky, fillOp: 45, tex: .5, ink: PAL.ink, sw: 1.3 });
@@ -99,14 +101,14 @@
     const ph = t >= bt(92) && t < bt(93.6) ? seg(t, bt(92), bt(93.6)) : t >= bt(94) ? seg(t, bt(94), bt(95.6)) : -1;
     const hop = ph < 0 ? 0 : Math.sin(Math.PI * ph);
     const u = kf(t, [[bt(92), 14], [bt(93.6), 17], [bt(94), 17], [bt(95.6), 21]]), cy = LY1(cx);
-    const cam = kf(t, [[bt(80), [600, 690, 1.45]], [bt(86), [760, 610, 1.12]], [bt(92), [800, 600, 1.08]],
+    const cam = kf(t, [[bt(80), [600, 690, 1.45]], [bt(86), [760, 650, 1.12]], [bt(92), [800, 650, 1.08]],
                        [bt(93.6), [X24 + 120, LY1(X24) - 220, 1.0]], [bt(95), [2150, LY1(2150) - 240, .94]]]);
     const [sx, sy] = shakeXY(t, 2 * pulse(t, 8));
     backdrop(.05 + .15 * seg(t, bt(80), bt(95)), 860, 560, 620);
     camBegin(cam[0] + sx, cam[1] + sy, cam[2] * (1 + .015 * pulse(t, 7)));
-    logGrid(.05, X23 - 900, 900, 900, 0, cam[0], cam[1], 1150 / cam[2]);
+    logGrid(.05, X23 - 900, LY1(X23), 900, 0, cam[0], cam[1], 1150 / cam[2]);
     theLine([[-900, LY1(-900)], [3800, LY1(3800)]], 18, .35);
-    const r = -ANG;
+    const r = ANG;
     tick(X23, LY1(X23), 23, 1, r); tick(X24, LY1(X24), 24, clamp((t - bt(93.4)) * 4), r); tick(X25, LY1(X25), 25, clamp((t - bt(95)) * 4), r);
 
     // the fridge and, once it is pinned, the poem on it
@@ -136,7 +138,7 @@
     // Clawd: writes, holds it up, watches it pinned, gets patted, crouches, hops
     const m = mood(t, [[0, 'look'], [bt(85), 'happy', 'spark'], [bt(87), 'look'], [bt(88.5), 'closed', 'heart'], [bt(91), 'happy']]);
     const writing = t < bt(85), holding = t >= bt(85) && t < bt(87), crouch = t >= bt(91) && t < bt(92) ? ease(seg(t, bt(91), bt(92))) : 0;
-    clawd(cx, cy, u, { draw: HARD, ...m, lookX: writing ? .3 : .9, lookY: writing ? .8 : -.3, rot: -ANG * .6,
+    clawd(cx, cy, u, { draw: HARD, ...m, lookX: writing ? .3 : .9, lookY: writing ? .8 : -.3, rot: ANG * .6,
       dy: -hop * 170 / u - (holding ? .5 * pulse(t, 6) : 0), sq: crouch * .28 + (t >= bt(88.5) && t < bt(91) ? .14 * pulse(t, 8) : 0) - hop * .1,
       aL: writing ? -.4 : holding ? 1.35 : hop > 0 ? 1.3 : .1, aR: writing ? -.25 + .25 * pulse2(t, 5) : holding ? 1.35 : hop > 0 ? 1.3 : .1,
       mouth: writing ? 'cat' : holding ? 'grin' : hop > 0 ? 'O' : pinning ? 'o' : 'smile', blush: !writing && t < bt(92) });
@@ -188,7 +190,7 @@
     paint(ellPts(1495, 515, 190, 150, 20, 4), { fill: PAL.teal, fillOp: 60, bleed: .3, ink: null });
     paint(rrPts(1395, 430, 200, 165, 10, 1.5), { wash: STEEL_DK, washOp: 255, ink: PAL.ink, sw: 1.1 });
     paint(rectPts(1408, 443, 174, 139, .5), { wash: '#1F4F5C', washOp: 255, fill: PAL.teal, fillOp: 90, tex: .4, ink: null });
-    inkLine([[1420, 570], [1570, 455]], 2.4, PAL.clay, 'ink', 0);
+    inkLine([[1420, 455], [1570, 570]], 2.4, PAL.clay, 'ink', 0);
     const sc = frac(bpOf(t) / 2);
     for (let i = 0; i < 4; i++) { const y = 452 + ((i * 30 - sc * 30) % 120 + 120) % 120; inkLine([[1420, y], [1420 + 40 + 60 * hash(i + Math.floor(bpOf(t) / 2)), y]], 1, PAL.cream, 'inkfine', 0); }
     pop();
@@ -208,8 +210,8 @@
     const bp = bpOf(t), w = .3 + .25 * seg(t, bt(95), bt(109));
     const z = lerp(1.13, 1.04, ease(lt / 6.5)), [sx, sy] = shakeXY(t, 2 * pulse(t, 8) + 9 * Math.exp(-Math.max(0, t - bt(106)) * 9) * (t > bt(106) ? 1 : 0));
     backdrop(w, 1250, 470, 720);
-    camBegin(1010 + sx, 560 + sy, z * (1 + .012 * pulse(t, 7)));
-    logGrid(w, CX2, FL2, 700, -ANG, 1010, 560, 1250 / z);
+    camBegin(1040 + sx, 610 + sy, z * (1 + .012 * pulse(t, 7)), ANG);
+    logGrid(w, CX2, FL2, 700, ANG, 1040, 610, 1250 / z);
     theLine([[-600, FL2], [2600, FL2]], 20, .5);
     tick(CX2, FL2, 25); tick(CX2 - 700, FL2, 24);
 
@@ -305,10 +307,10 @@
     const bub = t < bt(115) ? 0 : 34 * Math.exp(-(t - bt(115)) * 3.2) * Math.cos((t - bt(115)) * 13);
     const zk = ease(seg(t, bt(116), bt(117.5))), zoom = lerp(1, 5.4, zk) * (1 + .012 * pulse(t, 7));
     const [sx, sy] = shakeXY(t, 2 * pulse(t, 8) * (1 - zk) + 7 * Math.exp(-Math.max(0, t - bt(115)) * 10) * (t > bt(115) ? 1 : 0));
-    const ccx = lerp(960, LX, zk), ccy = lerp(540, lyC, zk);
+    const ccx = lerp(1000, LX, zk), ccy = lerp(615, lyC, zk);
     backdrop(w, 900, 480, 760);
-    camBegin(ccx + sx / zoom, ccy + sy / zoom, zoom);
-    logGrid(w, CX3, FL3, 700, -ANG, ccx, ccy, 1250 / zoom);
+    camBegin(ccx + sx / zoom, ccy + sy / zoom, zoom, ANG);
+    logGrid(w, CX3, FL3, 700, ANG, ccx, ccy, 1250 / zoom);
     theLine([[-600, FL3], [2600, FL3]], 22, .6);
     const far = zoom < 2.2;
     // Clawd: grows a size each time it passes through a 0
@@ -386,14 +388,14 @@
     const cam = kf(t, [[bt(118), [1090, 560, 1.14]], [bt(123.8), [1100, 545, 1.0]], [59.1, [1160, 520, .8]]]);
     const [sx, sy] = shakeXY(t, 2 * pulse(t, 8));
     backdrop(1, 1300, 380, 800, '#B27A46');                 // the desk the paper lies on, under the lamp
-    camBegin(cam[0] + sx, cam[1] + sy, cam[2] * (1 + .012 * pulse(t, 7)));
+    camBegin(cam[0] + sx, cam[1] + sy, cam[2] * (1 + .012 * pulse(t, 7)), ANG);
     // the sheet of log-log paper, cut off at the right, with a shadow on the desk; the grain of the desk beyond
-    push(); translate(EDGE, FL4); rotate(ANG);
+    push(); translate(EDGE, FL4); rotate(-ANG);
     for (let i = 0; i < 6; i++) inkLine([[30, -900 + i * 170], [1600, -880 + i * 170 + 30 * hash(i)]], .8, WOOD_DK, 'inkfine', .3);
     paint(rectPts(0, -2400, 34, 4800, 0), { fill: PAL.ink, fillOp: 90, bleed: .2, ink: null });
     paint(rectPts(-5000, -2400, 5000, 4800, 0), { wash: bgCol(w), washOp: 255, fill: PAL.clayDk, fillOp: 50, bleed: .1, tex: .5, ink: null });
     pop();
-    logGrid(w, EDGE, FL4, 700, -ANG, cam[0], cam[1], 1200 / cam[2], 0);
+    logGrid(w, EDGE, FL4, 700, ANG, cam[0], cam[1], 1200 / cam[2], 0);
     paint(ellPts(1000, 520, 700, 520, 30, 6), { fill: PAL.ochre, fillOp: 70, bleed: .3, tex: .2, border: 0, ink: null });
     // the line: straight up to the edge of the paper, except for a hair of a wobble at the end, erased by beat 123.6
     const wob4 = 13 * ease(seg(t, bt(120), bt(120.5))) * (1 - ease(seg(t, bt(122.2), bt(123.6))));

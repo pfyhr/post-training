@@ -150,7 +150,9 @@
   // ---------------- 4: the desk, in screen coordinates at its native scale ----------------
   const SH = { x: 120, y: 120, w: 980, h: 760 };           // the sheet: 4 decades across, 3 up
   const D_IN = (SH.x - 960) / CA, D_OUT = (SH.x + SH.w - 960) / CA;
-  const DOTS = [[-760, 20], [-500, 30], [-250, 44]];       // data points along the line, before the galaxy
+  // data points along the line, before the galaxy. All of them sit further up the line than Clawd (D_CLAWD = -380): the
+  // final zoom slides each dot in toward the centre, so a dot closer in than Clawd would pass right under it.
+  const DOTS = [[-880, 20], [-720, 30], [-545, 42]];
   const NEW = { x: 1110, y: 150, w: 380, h: 730 };          // the fresh sheet, taped to the right edge
   function grid(s, x0, y0, w, h, nx, ny, cw = w) {
     for (let d = 0; d < nx; d++) for (let m = 1; m < 10; m++) {

@@ -99,18 +99,23 @@
   const litAt = j => j < 0 ? -1e9 : j < 7 ? WHISPER(j) : BUILD + Math.min(j - 7, 12) * .05;
 
   // ---------------- the constellation: stars that slide onto the ruler's line ----------------
-  const TH = -.43, DIR = [Math.cos(TH), Math.sin(TH)];       // the line rises up and to the right
-  const CA = [657, 510];                                    // the ruler's centre at arm's length
+  // The loss line: it falls left to right (the same slope as the power cable, so sky and earth rhyme). It runs from the
+  // top-left of the sky down to the Researcher's ruler, which he holds up at arm's length and sights along.
+  const TH = .52, DIR = [Math.cos(TH), Math.sin(TH)];        // the line falls down and to the right
+  const handAt = (x, y, s, a, side) => [x + side * (1.75 * s + 3.2 * s * Math.cos(a)), y - 7.6 * s - 3.2 * s * Math.sin(a)];   // cast.js arm geometry
+  const A_W = .9, CA = handAt(RX, crestY(RX) + 1.1 * RS, RS, A_W, 1);   // the ruler hand at arm's length (wide shots)
+  const onLine = k => [CA[0] + DIR[0] * k, CA[1] + DIR[1] * k];
   const CON = Array.from({ length: 9 }, (_, i) => {
-    const k = 190 + i * 150 + 30 * hash(i + 50), tx = CA[0] + DIR[0] * k, ty = CA[1] + DIR[1] * k;
-    return { tx, ty, sx: tx + (hash(i + 7) - .5) * 260, sy: ty + (hash(i + 13) - .5) * 220, r: 7 + 5 * hash(i + 21), at: .5 + i * .24 };
+    const k = -400 - i * 72 - 20 * hash(i + 50), [tx, ty] = onLine(k);
+    return { tx, ty, sx: tx + (hash(i + 7) - .5) * 260, sy: Math.min(ty + (hash(i + 13) - .5) * 220, 470), r: 7 + 5 * hash(i + 21), at: .5 + i * .24 };
   });
-  const conEnd = [CA[0] + DIR[0] * 1700, CA[1] + DIR[1] * 1700];
-  // gather 0..1 pulls the stars onto the line; draw 0..1 inks the line between them; glow 0..1 turns it clay
+  const conTop = onLine(-1700), conLow = onLine(-128);      // the inked line: from off the top-left down to just short of the ruler
+  // gather 0..1 pulls the stars onto the line; draw 0..1 inks the line downhill between them; glow 0..1 turns it clay
   function constellation(t, gather, draw, glow, o = {}) {
     const pts = CON.map((c, i) => { const k = ease(clamp((gather - c.at / 3) * 3)); return [lerp(c.sx, c.tx, k), lerp(c.sy, c.ty, k), c.r, k]; });
     if (draw > 0) {
-      const a = [CON[0].tx, CON[0].ty], b = [lerp(a[0], conEnd[0], draw), lerp(a[1], conEnd[1], draw)];
+      const lo = o.ruler ? conLow : [CON[0].tx, CON[0].ty];   // down to the ruler while he holds it, else to the lowest star
+      const a = conTop, b = [lerp(a[0], lo[0], draw), lerp(a[1], lo[1], draw)];
       if (glow > 0) for (const [w, op] of [[16, 40], [7, 80]]) paint([[a[0] - DIR[1] * w, a[1] + DIR[0] * w], [b[0] - DIR[1] * w, b[1] + DIR[0] * w], [b[0] + DIR[1] * w, b[1] - DIR[0] * w], [a[0] + DIR[1] * w, a[1] - DIR[0] * w]],
         { wash: PAL.clayLt, washOp: op * glow, ink: null });
       inkLine([a, b], 1 + 2.4 * glow, mixCol(PAL.cream, PAL.clay, glow), 'ink', 0);
@@ -123,10 +128,13 @@
   }
 
   // ---------------- the two of them on the crest ----------------
-  const ruler = (ang) => (s, sw) => {                       // in arm space; ang = the ruler's angle in world space
-    push(); rotate(TH + ang);
-    paint(rectPts(-3.6 * s, -.38 * s, 9.5 * s, .76 * s, 0), { wash: '#E9C98A', washOp: 255, ink: PAL.ink, sw: sw * .7 });
-    for (let i = 0; i < 12; i++) inkLine([[-3.3 * s + i * .78 * s, -.38 * s], [-3.3 * s + i * .78 * s, (i % 2 ? -.12 : .05) * s]], sw * .4, PAL.ink, 'inkfine', 0);
+  // the ruler, drawn in world space over the face (he sights along it): from the hand up the line toward the stars
+  const ruler = (hx, hy, s) => {
+    const sw = clamp(s / 13, .45, 2.2);
+    push(); translate(hx, hy); rotate(TH + Math.PI);
+    paint(rectPts(-2.4 * s, -.38 * s, 9.5 * s, .76 * s, 0), { wash: '#E9C98A', washOp: 255, ink: PAL.ink, sw: sw * .7 });
+    for (let i = 0; i < 12; i++) inkLine([[-2.1 * s + i * .78 * s, -.38 * s], [-2.1 * s + i * .78 * s, (i % 2 ? -.12 : .05) * s]], sw * .4, PAL.ink, 'inkfine', 0);
+    paint(ellPts(0, -.1 * s, .5 * s, .42 * s, 12), { wash: '#F2C9A8', ink: PAL.ink, sw: sw * .6 });      // the fingers over it
     pop();
   };
   function researcherAt(x, s, o = {}) { const y = crestY(x); researcher(x, y + 1.1 * s, s, { sit: true, noShadow: true, ...o }); }
@@ -148,22 +156,24 @@
   // ---------------- 160.8 - 164.3: the ruler at arm's length; the stars line up along it ----------------
   function rulerShot(t, lt) {
     sky(t);
-    camBegin(lerp(760, 800, ease(lt / 3.5)), lerp(420, 390, ease(lt / 3.5)), lerp(1.55, 1.45, ease(lt / 3.5)));
+    camBegin(lerp(480, 440, ease(lt / 3.5)), lerp(380, 350, ease(lt / 3.5)), lerp(1.22, 1.12, ease(lt / 3.5)));
     moon(); groundW(); L0(); powerLine(t, 1, () => 1e9);
-    const raise = backOut(seg(lt, .1, .55)), a = lerp(-1.1, .55, raise);
-    constellation(t, seg(lt, .4, 2.6), seg(t, 163.3, 164.1), 0);
-    researcherAt(RX, RS, { eyes: 'look', lookX: .7, lookY: -1, aR: a, aL: -1, handR: raise > .2 ? ruler(a) : null, mouth: 'o' });
-    clawdAt(CX, CU, { eyes: 'look', lookX: .6, lookY: -1, aL: .2, aR: .2, mouth: lt > 2.3 ? 'O' : 'o' });
+    const raise = backOut(seg(lt, .1, .55)), a = lerp(-1.1, A_W, raise);
+    constellation(t, seg(lt, .4, 2.6), seg(t, 163.3, 164.1), 0, { ruler: true });
+    researcherAt(RX, RS, { eyes: 'look', lookX: -.7, lookY: -1, aR: a, aL: -1, mouth: 'o' });
+    if (raise > .2) ruler(...handAt(RX, crestY(RX) + 1.1 * RS, RS, a, 1), RS);
+    clawdAt(CX, CU, { eyes: 'look', lookX: -.2, lookY: -1, aL: .2, aR: .2, mouth: lt > 2.3 ? 'O' : 'o' });
     camEnd();
   }
 
   // ---------------- 164.3 - 166.9: the line glows; Clawd's eyes go starry; a shooting star runs it off the sky ----------------
   function prophecy(t, lt) {
     sky(t);
-    const k = ease(lt / 2.6);
-    camBegin(lerp(980, 1010, k), lerp(380, 360, k), 1);
-    const shoot = seg(lt, .5, 1.7), sx = lerp(CON[0].tx + 120, conEnd[0], shoot * shoot * .6 + shoot * .4), sy = CON[0].ty + (sx - CON[0].tx) * DIR[1] / DIR[0];
-    constellation(t, 1, 1, ease(seg(lt, 0, .4)), { flare: x => .9 * Math.exp(-Math.abs(x - sx) / 60) });
+    // the camera puts the world line exactly through the close-up ruler hand, so the ruler still lies on it
+    const k = ease(lt / 2.6), Z = 1.2, PH = handAt(PRX, PRY, PRS, PA, -1), Q = onLine(lerp(-60, -90, k));
+    camBegin(Q[0] - (PH[0] - 960) / Z, Q[1] - (PH[1] - 540) / Z, Z);
+    const shoot = seg(lt, .5, 1.7), sk = lerp(-1500, -60, shoot * shoot * .6 + shoot * .4), [sx, sy] = onLine(sk);   // it runs downhill to the ruler
+    constellation(t, 1, 1, ease(seg(lt, 0, .4)), { ruler: true, flare: x => .9 * Math.exp(-Math.abs(x - sx) / 60) });
     if (shoot > 0 && shoot < 1) {
       const L = 420, tx = sx - DIR[0] * L, ty = sy - DIR[1] * L;
       paint([[sx + DIR[1] * 18, sy - DIR[0] * 18], [tx, ty], [sx - DIR[1] * 18, sy + DIR[0] * 18]], { wash: PAL.clayLt, washOp: 120, ink: null });
@@ -172,13 +182,15 @@
       paint(starPts(sx, sy, 40, .25, 4, -Math.PI / 2 + t * 4), { wash: PAL.cream, washOp: 255, ink: null });
     }
     camEnd();
-    // close on the two faces, low in frame, tipped back to look up
-    paint([[-60, 860], [500, 835], [1100, 870], [1980, 950], [1980, 1140], [-60, 1140]], { wash: DUNE, washOp: 255, fill: PAL.violet, fillOp: 30, tex: .6, ink: null, curv: .5 });
-    paint([[-60, 858], [500, 833], [1100, 868], [1980, 948], [1980, 962], [1100, 882], [500, 848], [-60, 872]], { wash: SAND_LT, washOp: 200, ink: null, curv: .5 });
+    // close on the two faces, low in frame, tipped back to look up: Clawd left, the Researcher right with the ruler raised
+    paint([[-60, 900], [600, 862], [1200, 850], [1980, 880], [1980, 1140], [-60, 1140]], { wash: DUNE, washOp: 255, fill: PAL.violet, fillOp: 30, tex: .6, ink: null, curv: .5 });
+    paint([[-60, 898], [600, 860], [1200, 848], [1980, 878], [1980, 892], [1200, 862], [600, 875], [-60, 912]], { wash: SAND_LT, washOp: 200, ink: null, curv: .5 });
     const m = mood(t, [[164.3, 'look'], [164.75, 'spark', 'spark']]);
-    researcher(260, 960, 30, { eyes: t > 164.95 ? 'star' : 'look', lookX: .7, lookY: -1, aR: .55, aL: -1.1, handR: ruler(.55), mouth: t > 164.95 ? 'O' : 'o', noShadow: true, rot: -.04 });
-    clawd(700, 868, 40, { draw: HARD, ...m, lookX: .7, lookY: -1, mouth: t > 164.8 ? 'O' : 'o', aL: .2 + .5 * seg(lt, .6, 1), aR: .2 + .5 * seg(lt, .6, 1), rot: -.06, dy: -.25 * m.take, noShadow: true });
+    clawd(560, 884, 40, { draw: HARD, ...m, lookX: -.5, lookY: -1, mouth: t > 164.8 ? 'O' : 'o', aL: .2 + .5 * seg(lt, .6, 1), aR: .2 + .5 * seg(lt, .6, 1), rot: .05, dy: -.25 * m.take, noShadow: true });
+    researcher(PRX, PRY, PRS, { eyes: t > 164.95 ? 'star' : 'look', lookX: -.7, lookY: -1, aL: PA, aR: -1.1, mouth: t > 164.95 ? 'O' : 'o', noShadow: true });
+    ruler(...PH, PRS);
   }
+  const PRX = 1400, PRY = 990, PRS = 30, PA = 1.0;            // the close-up Researcher and his raised (left) arm
 
   // ---------------- the planet-sized constellation Clawd: a dark silhouette in the sky, stars on its corners ----------------
   function skyClawd(x, y, u, o = {}) {

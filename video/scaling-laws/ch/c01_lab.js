@@ -1,7 +1,8 @@
 // c01_lab.js: 30.07-37.57, bars 17-20. The kick lands. Out of chapter 0's cream flash: the choir stomps on every
 // beat, dust jumps off the risers, and a giant log-log chart drops in behind them like a stage backdrop. Whip pan to
 // the lead Clawd at a desk-sized chalkboard: it sharpens a ruler-long pencil on the beat, flips onto a ruler laid
-// across the graph paper and rules the line corner to corner in one stroke, then the camera pushes into the paper.
+// across the graph paper and rules the loss line corner to corner in one stroke (top left down to
+// bottom right, riding it down), then the camera pushes into the paper.
 (() => {
   const soft = (c, k = .5) => mixCol(c, PAL.paper, k);
   const { NIGHT, GRID, STEEL, STEEL_DK, HARD, HARD_LAMP, labCoat } = SL;
@@ -47,7 +48,7 @@
     paint(rectPts(-600, -600, W + 4200, H + 1200), { wash: NIGHT, washOp: 255, fill: PAL.indigo, fillOp: 60, bleed: .2, tex: .5, ink: null });
     for (let x = 0; x <= W + 2800; x += 96) inkLine([[x, -20], [x, 640]], .5, WALL_GRID, 'inkfine', 0);
     for (let y = 0; y <= 640; y += 96) inkLine([[-20, y], [W + 2800, y]], .5, WALL_GRID, 'inkfine', 0);
-    inkLine([[120, 560], [1800, 80]], 5, PAL.clay, 'ink', 0);
+    inkLine([[120, 80], [1800, 560]], 5, PAL.clay, 'ink', 0);   // the loss line, falling left to right
   }
   // the backdrop chart, hung from a batten; oy = drop offset, r = swing
   const BD = { x: 110, y: 52, w: 1700, h: 570 };
@@ -57,7 +58,7 @@
     paint(rectPts(BD.x + 8, BD.y + 10, BD.w, BD.h, 2), { fill: PAL.ink, fillOp: 120, bleed: .1, ink: null });      // drop shadow on the wall
     paint(rectPts(BD.x, BD.y, BD.w, BD.h, 3), { wash: PAL.cream, washOp: 255, fill: PAL.paper, fillOp: 110, bleed: .1, tex: .6, ink: PAL.ink, sw: 1.4 });
     logGrid(BD.x + 30, BD.y + 26, BD.w - 60, BD.h - 52, 5, 3, mixCol(PAL.teal, PAL.cream, .1), mixCol(PAL.teal, PAL.cream, .5), 1.3, .5);
-    const A = [BD.x + 60, BD.y + BD.h - 50], B = [BD.x + BD.w - 60, BD.y + 50];
+    const A = [BD.x + 60, BD.y + 50], B = [BD.x + BD.w - 60, BD.y + BD.h - 50];   // loss falls left to right
     theLine(A, B, 9, .5 + .5 * pulse(t, 5), 2);
     // a glint rides the line, one sweep per beat
     const f = frac(bpOf(t)), gx = lerp(A[0], B[0], f), gy = lerp(A[1], B[1], f);
@@ -133,7 +134,7 @@
 
   // ---------------- 33.82 - 37.57: the chalkboard: sharpen, flip, rule the line, push in ----------------
   const BOARD = { x: 620, y: 205, w: 1200, h: 650 }, PAPER = { x: 700, y: 262, w: 1040, h: 528 };
-  const A = [740, 760], B = [1700, 285];
+  const A = [740, 285], B = [1700, 760];                       // the loss line: upper left down to lower right
   const DX = B[0] - A[0], DY = B[1] - A[1], LEN = Math.hypot(DX, DY), D = [DX / LEN, DY / LEN], N = [D[1], -D[0]], ANG = Math.atan2(DY, DX);
   const at = (s, up = 0) => [A[0] + D[0] * s + N[0] * up, A[1] + D[1] * s + N[1] * up];   // point on the line, `up` px above it
   const RW = 54, RB = 11, U = 24, PEN = 15 * U, TIPX = 6 * U;           // ruler width, hero unit, pencil length, pencil tip ahead of the feet
@@ -159,8 +160,10 @@
     // chalk tray with three sticks
     paint(rectPts(x + 30, y + h - 6, w - 60, 18, 1), { wash: '#7C4A2C', washOp: 255, ink: PAL.ink, sw: .8 });
     [[x + 860, PAL.cream], [x + 920, PAL.rose], [x + 1010, PAL.cream]].forEach(([cx, c]) => paint(rrPts(cx, y + h - 16, 52, 12, 5), { wash: c, washOp: 255, ink: PAL.ink, sw: .5 }));
-    // a little chalk arrow up and to the right in the margin
-    inkLine([[x + 1110, y + h - 40], [x + 1160, y + h - 70]], 1.6, PAL.cream, 'dry', 0);
+    // a little chalk arrow down and to the right in the margin, labelled "loss"
+    inkLine([[x + 1124, y + 300], [x + 1160, y + 360]], 1.8, PAL.cream, 'dry', 0);
+    inkLine([[x + 1142, y + 356], [x + 1160, y + 360], [x + 1162, y + 341]], 1.8, PAL.cream, 'dry', 0);
+    letter('loss', x + 1140, y + 280, 22, PAL.cream, { ink: false, rot: -.1 });
     // the sheet of log-log paper, taped on
     const P = PAPER;
     paint(rectPts(P.x + 6, P.y + 8, P.w, P.h, 1), { fill: PAL.ink, fillOp: 90, bleed: .1, ink: null });
@@ -234,7 +237,7 @@
       insert = -40 * ease(k); aL = lerp(.3, 1.1, ease(k));
       if (j > 0) {                                             // front flip from the floor onto the end of the ruler
         const [px, py] = at(S0, RW), e = ease(j);
-        x = lerp(X0, px, e); y = lerp(GROUND, py, e) - 260 * Math.sin(Math.PI * j);
+        x = lerp(X0, px, e); y = lerp(GROUND, py, e) - 170 * Math.sin(Math.PI * j);
         rot = lerp(0, ANG, e) + TAU * ease(seg(j, .1, .85)); sq = -.12 * Math.sin(Math.PI * j);
       } else sq = .12 * Math.exp(-seg(t, bt(75.9), bt(76)) * 4) * (t > bt(75.9) ? 1 : 0);
     } else {
@@ -260,21 +263,21 @@
     const g = ease(seg(t, GRIND0 - .2, GRIND1 + .2)), push_ = Math.pow(seg(t, PUSH0, END + .15), 2);
     const tgt = at(LEN * .45);
     const wide = ease(seg(t, bt(75.9), bt(77)));                   // tight on the sharpening, then pull back for the stroke
-    let cx = lerp(lerp(400, 960, wide), 1040, g) - 2200 * arrive, cy = lerp(lerp(700, 520, wide), 445, g);
-    let z = lerp(lerp(1.65, .98, wide), .96, g) * (1 + .018 * pulse(t, 7));
+    let cx = lerp(lerp(400, 980, wide), 1040, g) - 2200 * arrive, cy = lerp(lerp(700, 420, wide), 450, g);   // framed high: the ride starts top left
+    let z = lerp(lerp(1.65, .9, wide), .92, g) * (1 + .018 * pulse(t, 7));
     cx = lerp(cx, tgt[0], ease(push_ * 1.4)); cy = lerp(cy, tgt[1], ease(push_ * 1.4)); z *= lerp(1, 7, push_);
     const [sx, sy] = shakeXY(t, (2 + 3 * pulse(t, 8)) * (1 - push_));
     camBegin(cx + sx, cy + sy, z);
     room(t);
     board(t);
-    // the line: ruled from A up to the pencil tip, then it glows on the beat
+    // the line: ruled from A down to the pencil tip, then it glows on the beat
     const k = t < GRIND0 ? 0 : ease(seg(t, GRIND0, GRIND1));
     const tipS = k * LEN;
     ruler();
     if (tipS > 2) theLine(A, at(tipS), 9, t >= GRIND1 ? .6 + .4 * pulse(t, 5) : .5);
     sharpener(t);
     if (t < GRIND0 && t >= bt(72)) shavings(t);
-    if (t > GRIND0 && t < GRIND1) {                            // speed lines behind Clawd as it grinds up the ruler
+    if (t > GRIND0 && t < GRIND1) {                            // speed lines behind Clawd as it grinds down the ruler
       const p = at(lerp(S0, S1, ease(seg(t, GRIND0, GRIND1))), RW + 90);
       for (let i = 0; i < 4; i++) { const a = [p[0] - D[0] * (60 + i * 18) + N[0] * (i * 28 - 40), p[1] - D[1] * (60 + i * 18) + N[1] * (i * 28 - 40)];
         band(a, [a[0] - D[0] * 220, a[1] - D[1] * 220], 3, { fill: PAL.cream, fillOp: 150, bleed: .1, ink: null }); }
@@ -294,7 +297,7 @@
       paint(starPts(B[0], B[1], r, .25, 4), { wash: PAL.cream, washOp: 255, ink: null });
     }
     camEnd();
-    sfx('SHING!', 700, 230, 92, PAL.cream, shing, { life: .8, rot: -.1 });
+    sfx('SHING!', 1120, 190, 92, PAL.cream, shing, { life: .8, rot: -.1 });
     whip(arrive);
   }
   const END = barT(21);

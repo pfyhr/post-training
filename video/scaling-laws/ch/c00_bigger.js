@@ -190,9 +190,10 @@
     paint(rectPts(-600, -600, W + 1200, H + 1200), { wash: NIGHT, washOp: 255, fill: PAL.indigo, fillOp: 60, bleed: .2, tex: .5, ink: null });
     for (let x = 0; x <= W; x += 96) inkLine([[x, -20], [x, 640]], .5, mixCol(NIGHT, GRID, .45), 'inkfine', 0);
     for (let y = 0; y <= 640; y += 96) inkLine([[-20, y], [W + 20, y]], .5, mixCol(NIGHT, GRID, .45), 'inkfine', 0);
-    // the line on the back wall grows a notch on every chanted "Bigger" (32 beats, bars 9-16), dots pop as it passes
+    // the loss line on the back wall grows a notch on every chanted "Bigger" (32 beats, bars 9-16), falling from the
+    // upper left down to the right like a scaling law on log-log paper; dots pop as it passes
     const nb = (t - barT(9)) / BEAT, grow = clamp((Math.floor(nb) + easeOut(frac(nb) * 2.5)) / 32);
-    const A = [120, 560], B = [1800, 80], at = k => [lerp(A[0], B[0], k), lerp(A[1], B[1], k)], tip = at(grow);
+    const A = [120, 80], B = [1800, 560], at = k => [lerp(A[0], B[0], k), lerp(A[1], B[1], k)], tip = at(grow);
     if (grow > .005) inkLine([A, tip], 3 + 2 * build, PAL.clay, 'ink', 0);
     [.12, .27, .42, .57, .72, .87].forEach((k, i) => { const age = (grow - k) * 32 * BEAT; if (age < 0) return;
       const [x, y] = at(k), r = (9 + 2 * i) * backOut(clamp(age / .25)); paint(ellPts(x, y, r, r, 14, 1), { wash: PAL.clay, fill: PAL.clayDk, fillOp: 40, ink: PAL.ink, sw: .8 }); });

@@ -230,7 +230,14 @@
   }
 
   // ---------------- 75.06 – 77.40: through the hole in the wall onto the stage ----------------
-  const HC = [960, 470], HOLE = Array.from({ length: 22 }, (_, i) => { const a = i / 22 * TAU, r = 310 * (.78 + .4 * hash(i * 3.1 + 7)); return [Math.cos(a) * r, Math.sin(a) * r * .9]; });
+  // the hole continues chapter 3's last frame: a ragged band along the falling line (22.5 deg), widest where it hit
+  const HC = [960, 470], HD = [.924, .383], HOLE = (() => {
+    const top = [], bot = [], wAt = (u, k) => (100 + 110 * Math.exp(-((u / 260) ** 2))) * (.8 + .4 * hash(k));
+    for (let i = 0; i <= 16; i++) { const u = lerp(-400, 900, i / 16);
+      top.push([HD[0] * u + HD[1] * wAt(u, i * 3.1), HD[1] * u - HD[0] * wAt(u, i * 3.1)]);
+      bot.push([HD[0] * u - HD[1] * wAt(u, i * 5.7 + 2), HD[1] * u + HD[0] * wAt(u, i * 5.7 + 2)]); }
+    return top.concat(bot.reverse());
+  })();
   const holeAt = sc => HOLE.map(([x, y]) => [HC[0] + x * sc, HC[1] + y * sc]);
   function spanAt(pts, y) {                                   // left/right x of the hole at height y, or null
     let lo = Infinity, hi = -Infinity;
@@ -274,7 +281,7 @@
     }
   }
   function throughWall(t, lt) {
-    const thru = easeIn(seg(t, bt(160) + .25, bt(162) + .1)), sc = 1 + 9 * thru;
+    const thru = easeIn(seg(t, bt(160) + .25, bt(162) + .1)), sc = 1.5 + 8.5 * thru;          // starts at chapter 3's brick size
     const zoom = lerp(1.55, 1.0, ease(seg(t, bt(160) + .1, bt(163))));
     const [sx, sy] = shakeXY(t, 12 * (1 - seg(lt, 0, .6)) + 2 * pulse(t, 8));
     camBegin(960 + sx, lerp(470, 540, ease(seg(t, bt(160), bt(163)))) + sy, zoom * (1 + .015 * pulse(t, 7)));
