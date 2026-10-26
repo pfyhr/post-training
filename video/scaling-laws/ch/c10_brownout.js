@@ -179,7 +179,7 @@
     const n = pts.length; let cx = 0, cy = 0; for (const p of pts) { cx += p[0]; cy += p[1]; } cx /= n; cy /= n;
     const out = p => { const dx = p[0] - cx, dy = p[1] - cy, d = Math.hypot(dx, dy) || 1; return [cx + dx / d * 5000, cy + dy / d * 5000]; };
     for (let i = 0; i < n; i++) {
-      const a = pts[i], b = pts[(i + 1) % n], ex = (b[0] - a[0]) * .04, ey = (b[1] - a[1]) * .04;
+      const a = pts[i], b = pts[(i + 1) % n], ex = (b[0] - a[0]) * .01, ey = (b[1] - a[1]) * .01;   // just enough overlap to close the seams
       const a2 = [a[0] - ex, a[1] - ey], b2 = [b[0] + ex, b[1] + ey];
       paint([a2, b2, out(b2), out(a2)], { wash: DARK, washOp: op, ink: null });
     }
@@ -269,6 +269,7 @@
     if (!on && torchOn) {
       const bp = beamPts(fx, fy, fa, len, br);
       darkOutside(bp, 236);
+      paint(bp, { fill: '#FFE9B0', fillOp: 30, bleed: .35, ink: null });               // a warm, soft-edged beam hides the wedge seams
       paint(bp, { wash: PAL.cream, washOp: 40, fill: PAL.cream, fillOp: 60, bleed: .15, tex: .3, border: .4, ink: null });
     }
     if (!on && !torchOn) { camEnd(); flash(.93, DARK); camBegin(cam[0] + sx, cam[1] + sy, cam[2]); }

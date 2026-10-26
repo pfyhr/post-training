@@ -396,7 +396,7 @@
   const JAM = bt(194);
   function plugShot(t, lt) {
     const on = t >= JAM, lit = on ? 1 : 0;
-    const nb = (t - barT(48)) / BEAT, prog = on ? 1 : clamp((Math.floor(nb) + easeOut(clamp(frac(nb) * 2.2))) / 6);
+    const nb = (t - barT(48)) / BEAT, prog = on ? 1 : clamp((Math.floor(nb) + easeIn(clamp((frac(nb) - .55) / .45))) / 6);   // each shove lands on the next beat, the last on the CLUNK
     const px = lerp(440, 1000, prog), [sx, sy] = shakeXY(t, on ? 14 * Math.max(0, 1 - (t - JAM) * 3) : 2 * pulse(t, 8));
     camBegin(960 + sx, 520 + sy, 1.0);
     sky(-200, 2100, 620);
@@ -404,8 +404,11 @@
     push(); translate(260, 700); scale(.36); translate(-960, -780); festival(t, { noBg: true, lod: 'far', crowd: false, lit }); pop();
     // the socket dune on the right
     paint([[1260, 780], [1380, 380], [1640, 300], [1960, 340], [2100, 780]], { wash: DUNE_LT, washOp: 255, fill: PAL.clay, fillOp: 30, tex: .5, ink: PAL.ink, sw: 1.1, curv: .6 });
+    // the socket, seen side-on like the plug: a housing set into the dune, its face toward the plug with the two slot
+    // openings where the prongs go in (prongs are cut off at the face, x 1560, so they vanish into it)
     paint(rrPts(1560, 430, 230, 300, 26), { wash: PAL.cream, washOp: 255, fill: soft(PAL.ochre, .5), fillOp: 50, tex: .4, ink: PAL.ink, sw: 1.6 });
-    for (const y of [500, 620]) paint(rrPts(1600, y, 90, 34, 8), { wash: PAL.ink, washOp: 255, ink: null });
+    paint(rrPts(1560, 446, 34, 268, 10), { wash: '#E2D6BC', washOp: 255, fill: PAL.ochre, fillOp: 40, ink: PAL.ink, sw: 1.2 });
+    for (const y of [502, 622]) paint(rrPts(1562, y - 3, 14, 36, 4), { wash: PAL.ink, washOp: 255, ink: null });
     paint(rectPts(-200, 760, 2400, 600, 0), { wash: SAND_N, washOp: 255, fill: DUNE, fillOp: 60, tex: .5, ink: PAL.ink, sw: .8 });
     if (!on) flash(.45, '#0E0A1E');
     // the cable, from the stage to the plug

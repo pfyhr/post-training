@@ -290,9 +290,12 @@
   }
 
   // ---------------- 204.39 – 208.14: Clawd throws the plug; it lands in a socket on the Sun ----------------
-  function plugAt(x, y, s, r) {                               // a big three-quarter plug, prongs to the right
+  // a big three-quarter plug, prongs to the right; `inX` (unrotated plugs only) is the socket face: prongs past it are
+  // inside the socket and not drawn
+  function plugAt(x, y, s, r, inX = Infinity) {
     push(); translate(x, y); rotate(r);
-    for (const py of [-.22, .22]) paint(rectPts(.45 * s, py * s - .06 * s, .5 * s, .12 * s, 0), { wash: STEEL, washOp: 255, ink: PAL.ink, sw: .9 });
+    const pl = Math.min(.5 * s, inX - x - .45 * s);
+    if (pl > 1) for (const py of [-.22, .22]) paint(rectPts(.45 * s, py * s - .06 * s, pl, .12 * s, 0), { wash: STEEL, washOp: 255, ink: PAL.ink, sw: .9 });
     paint(rrPts(-.5 * s, -.4 * s, .95 * s, .8 * s, .15 * s), { wash: PAL.cream, washOp: 255, fill: PAL.clayLt, fillOp: 40, ink: PAL.ink, sw: 1.3 });
     paint(rrPts(-.75 * s, -.17 * s, .3 * s, .34 * s, .06 * s), { wash: STEEL_DK, washOp: 255, ink: PAL.ink, sw: 1 });
     inkLine([[-.1 * s, -.25 * s], [-.1 * s, .25 * s]], 1, soft(PAL.ink, .4), 'inkfine', 0);
@@ -304,9 +307,12 @@
     camBegin(960 + shx, 540 + shy, 1 + .025 * p + (aj > 0 ? .04 * Math.max(0, 1 - aj / .4) : 0));
     const boost = aj > 0 ? 1 : 0, sx = 1450, sy = 500, sr = 230;
     sky(t, sx, sy, sr * .75); sun(t, sx, sy, sr, boost * (.6 + .4 * p));
-    const sock = [sx - sr * .58, sy + 30];                      // the socket plate, on the sun's face
-    paint(rrPts(sock[0] - 62, sock[1] - 78, 124, 156, 22), { wash: PAL.cream, washOp: 255, ink: PAL.ink, sw: 1.4 });
-    for (const dy of [-26, 26]) paint(rrPts(sock[0] - 22, sock[1] + dy - 9, 44, 18, 5), { wash: PAL.ink, ink: null });
+    // the socket, side-on like the plug: a housing on the sun's near side, its face toward the planet with the two slot
+    // openings; the plug's prongs vanish into them
+    const sock = [sx - sr * .58, sy + 30], face = sock[0] - 40;
+    paint(rrPts(face, sock[1] - 78, 110, 156, 22), { wash: PAL.cream, washOp: 255, ink: PAL.ink, sw: 1.4 });
+    paint(rrPts(face, sock[1] - 70, 22, 140, 8), { wash: '#E2D6BC', washOp: 255, ink: PAL.ink, sw: 1.1 });
+    for (const dy of [-24, 24]) paint(rrPts(face + 2, sock[1] + dy - 10, 10, 20, 3), { wash: PAL.ink, ink: null });
     const g = { cx: 540, cy: 690, R: 240, rot: ROT(t), tilt: .35, sx, sy, m: -.1 };
     ring(t, g, -1);
     globe(t, g, { bright: aj > 0 ? 1 : .55, boost });
@@ -316,7 +322,7 @@
     const wind = seg(t, barT(110), throwT), fling = seg(t, throwT, throwT + .2);
     const aR = aj > 0 ? 1.3 + .3 * p : lerp(lerp(.6, 2.3, ease(wind)), .2, ease(fling)), rot = lerp(lerp(0, .22, ease(wind)), -.25, ease(fling)) * (aj > 0 ? 0 : 1);
     const hand = rotP(fx, fy, rot, (4.9 + 2.2 * Math.cos(aR)) * u, -(4.5 + 2.2 * Math.sin(aR)) * u);
-    const fly = seg(t, throwT, jam), dest = [sock[0] - 48, sock[1]];
+    const fly = seg(t, throwT, jam), dest = [face - .45 * 110, sock[1]];               // plug face flush with the socket face
     let pp, pr;
     if (t < throwT) { pp = [hand[0] + 10, hand[1] - 10]; pr = -.3 - .6 * wind; }
     else { const k = fly * .6 + .4 * fly * fly; pp = [lerp(hand[0], dest[0], k), lerp(hand[1], dest[1], k) - 260 * Math.sin(Math.PI * k)]; pr = lerp(-.9, 0, ease(k)); }
@@ -332,8 +338,8 @@
     }
     stage(t, fx, fy + 1, u / 2.6);
     lead(t, fx, fy, u, { style: aj > 0 ? 'roof' : 'idle', ...(aj > 0 ? {} : { rot, aR, aL: .3 + .4 * wind }), glow: aj > 0 ? .5 + .5 * p : .25 + .75 * p });
-    plugAt(pp[0], pp[1], 110, pr);
-    if (aj > 0) sfx('KA-CHUNK!', sock[0] - 40, sock[1] - 170, 96, GOLD_LT, aj, { life: 1.3, rot: -.08 });
+    plugAt(pp[0], pp[1], 110, pr, Math.abs(pr) < .02 ? face : Infinity);
+    if (aj > 0) sfx('KA-CHUNK!', face - 40, sock[1] - 170, 96, GOLD_LT, aj, { life: 1.3, rot: -.08 });
     camEnd();
     if (aj > 0 && aj < .4) paint(rectPts(-60, -60, W + 120, H + 120), { wash: GOLD_LT, washOp: 210 * (1 - ease(aj / .4)), ink: null });
     beatGlow(t);

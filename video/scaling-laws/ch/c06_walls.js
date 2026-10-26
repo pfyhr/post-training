@@ -355,6 +355,10 @@
   // height of the tower top (feet of the next climber), eased as each one lands
   const towerTop = t => { let y = feetY(0) + 0; for (let k = 0; k < NCL; k++) y -= STRIDE * ease(seg(t, land(k) - .05, land(k) + .2)); return y; };
   // the line slopes DOWN from the tower top toward the dam; it tilts steeper as the tower lifts its tail (still dead straight)
+  // where the line rests: on top of whoever is on top of the tower (a hard hat sits higher than a bare lab-coat head),
+  // lifting to each new climber as they land
+  const restY = k => k < 0 ? GROUND - 12.5 * BU - 34 : feetY(k) - (k % 2 ? 8 : 12.5) * CU - 34;
+  const holdY = t => { let y = restY(-1); for (let k = 0; k < NCL; k++) y = lerp(y, restY(k), ease(seg(t, land(k), land(k) + .15))); return y; };
   const LLEN = 1450, lAng = t => lerp(.06, .25, clamp((feetY(0) - towerTop(t)) / (NCL * STRIDE)));
   function damScene(t, zinv) {
     dusk(-3200, 1000, -3000, 6500);
@@ -449,10 +453,9 @@
     // cracks creep across the dam on each roll hit in the last bar
     const pre = seg(t, barT(71), IMPACT);
     // the line, held by the top of the tower; wind up, then thrust
-    const tailFeet = Math.min(towerTop(t), feetY(0));
     const wind = ease(seg(t, IMPACT - .55, IMPACT - .12)), thrust = easeIn(seg(t, IMPACT - .12, IMPACT));
-    const DIR = [Math.cos(lAng(t)), Math.sin(lAng(t))], lift = 92 + 100 * (1 - seg(t, land(0) - .05, land(0) + .2));  // resting on the top hard hat
-    const push_ = 180 * wind - 600 * thrust, tail = [BASE_X + 40 - DIR[0] * push_, tailFeet - lift - DIR[1] * push_];
+    const DIR = [Math.cos(lAng(t)), Math.sin(lAng(t))];
+    const push_ = 180 * wind - 600 * thrust, tail = [BASE_X + 40 - DIR[0] * push_, holdY(t) - DIR[1] * push_];
     const tip = [tail[0] + DIR[0] * LLEN, tail[1] + DIR[1] * LLEN];
     if (pre > 0) cracks([tip[0] + 30, tip[1]], t, .6 * pre * (.75 + .25 * roll));
     beam([tail[0] - DIR[0] * 3000, tail[1] - DIR[1] * 3000], tip, 70, 1 + 1.5 * pre);

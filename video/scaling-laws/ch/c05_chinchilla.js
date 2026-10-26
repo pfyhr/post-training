@@ -544,7 +544,7 @@
     track(A, B, 116.1, t, true);
     cart(px, py - 28, ANG, t);
     // the professor cheers from the board's bottom-left corner, out of the coaster's way
-    chinchilla(250, 1060, 15, { eyes: 'happy', aR: 1.5 + .4 * Math.sin(t * 9), aL: 1.2, pawR: pointer(8, 0), mouth: 'O', dy: -.6 * Math.abs(Math.sin(bpOf(t) * Math.PI)), seed: 4 });
+    chinchilla(250, 880, 15, { eyes: 'happy', aR: 1.5 + .4 * Math.sin(t * 9), aL: 1.2, pawR: pointer(8, 0), mouth: 'O', dy: -.6 * Math.abs(Math.sin(bpOf(t) * Math.PI)), seed: 4 });
     if (t > RIDE0 && t < RIDE0 + .8) sfx('WHEEE!', px - 100, py - 260, 70, PAL.ochre, t - RIDE0, { life: .8 });
     camEnd();
     // handoff: a megaphone noses in from the left and squeals; the light turns to dusk
