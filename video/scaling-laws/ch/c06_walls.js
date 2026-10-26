@@ -78,12 +78,14 @@
     inkLine([[x0, hz], [x1, hz]], 1.1, PAL.ink, 'inkfine', 0);
   };
   // the line: a thick straight clay beam with a glow, from a to b (never bends)
-  function beam(a, b, th, glow = 1) {
+  // the line from a to b; `tip` false draws a plain section (no glowing tip), e.g. where the line disappears into a hole
+  function beam(a, b, th, glow = 1, tip = true) {
     const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * th / 2, ny = dx / l * th / 2;
     const q = (k, s) => [[a[0] + nx * k, a[1] + ny * k], [b[0] + nx * k + dx / l * s, b[1] + ny * k + dy / l * s], [b[0] - nx * k + dx / l * s, b[1] - ny * k + dy / l * s], [a[0] - nx * k, a[1] - ny * k]];
-    paint(q(2, th * .6), { fill: PAL.clayLt, fillOp: Math.min(110, 70 * glow), bleed: .25, tex: .3, ink: null });
+    paint(q(2, tip ? th * .6 : 0), { fill: PAL.clayLt, fillOp: Math.min(110, 70 * glow), bleed: .25, tex: .3, ink: null });
     paint(q(1, 0), { wash: PAL.clay, washOp: 255, fill: PAL.clayDk, fillOp: 50, tex: .4, ink: PAL.ink, sw: 1.4 });
     paint(q(.3, 0).map(([x, y]) => [x - nx * .35, y - ny * .35]), { wash: PAL.clayLt, washOp: 170, ink: null });
+    if (!tip) return;
     paint(ellPts(b[0], b[1], th * .9, th * .9, 18, 2), { fill: GOLD, fillOp: 160 * glow, bleed: .3, ink: null });
     paint(ellPts(b[0], b[1], th * .32, th * .32, 12), { wash: GOLD_LT, washOp: 255, ink: null });
   }
@@ -101,49 +103,37 @@
   const SLOPE = 140 / 360, lineY = x => 380 + (x - 860) * SLOPE, LA = [-400, lineY(-400)];
   const LANG1 = Math.atan(SLOPE);
   const BRICK = ['#A8553A', '#B8664A', '#94472F', '#B05A3E'], MORTAR = '#5A3A34';
-  // the hole: bricks gone out to a ragged radius; the mortar behind breaks a little closer in, so a dark broken rim
-  // frames a slot of open sky the line passes through
-  const backEdge = (i, x, side) => lineY(x) + side * (50 + 16 * hash(i * 13 + Math.round(x / 14) * 7 + (side > 0 ? 3 : 0)));
+  // each wall gets a ragged hole punched in its face where the line goes in; from there the line runs on BEHIND the
+  // wall and bursts out past its far edge, so between the hole and the far edge it is hidden (like the plug's prongs)
+  const holeX = i => WALLS[i].x - WALLS[i].w * .25, HOLE_R = 46;
   const tipXAt = t => kf(t, [[S1, 560], [barT(65) - .1, 600], [HIT[0], 1010], [HIT[1], 1375], [HIT[2], 1740], [HIT[2] + .5, 1930]], ease);
+  const holeRim = (i, cx, cy, r) => Array.from({ length: 14 }, (_, k) => { const a = k / 14 * TAU, rr = r * (.8 + .4 * hash(i * 19 + k * 3.3)); return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]; });
   function wall(i, t, tipX) {
-    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, cut = Math.min(x1, tipX);
+    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, x1 = w.x + w.w / 2;
+    const hx = holeX(i), hy = lineY(hx), punched = tipX >= hx, pAge = punched ? clamp((tipX - hx) / 60) : 0;
     const jolt = age > 0 ? Math.sin(age * 30) * Math.exp(-age * 7) : 0;
     push(); translate(w.x, HZ1); rotate(jolt * .015); translate(-w.x + jolt * 8, -HZ1);
-    // the mortar backing, with the slot cut out behind the tip
-    const ink = { wash: MORTAR, washOp: 255, fill: PAL.night, fillOp: 30, tex: .4, ink: PAL.ink, sw: 1.3 };
-    if (cut <= x0) paint(rectPts(x0, w.top, w.w, HZ1 - w.top, 2), ink);
-    else {
-      const xs = []; for (let x = x0; x < cut - 4; x += 14) xs.push(x); xs.push(cut);
-      const up = xs.map(x => [x, backEdge(i, x, -1)]), dn = xs.map(x => [x, backEdge(i, x, 1)]);
-      if (cut >= x1) {                                  // pierced right through: two pieces
-        paint([[x0, w.top], [x1, w.top], ...up.slice().reverse()], ink);
-        paint([...dn, [x1, HZ1], [x0, HZ1]], ink);
-      } else paint([[x0, w.top], [x1, w.top], [x1, HZ1], [x0, HZ1], ...dn, [Math.min(cut + 30, x1 - 2), lineY(Math.min(cut + 30, x1 - 2))], ...up.slice().reverse()], ink);
-    }
+    paint(rectPts(x0, w.top, w.w, HZ1 - w.top, 2), { wash: MORTAR, washOp: 255, fill: PAL.night, fillOp: 30, tex: .4, ink: PAL.ink, sw: 1.3 });
     const bh = 34, bw = 62;
     for (let r = 0, y = HZ1 - bh; y > w.top - 1; r++, y -= bh) {
       for (let x = x0 + (r % 2 ? -bw / 2 : 0); x < x1; x += bw) {
         const a = Math.max(x, x0) + 2, b = Math.min(x + bw, x1) - 2; if (b - a < 8) continue;
         const mx = (a + b) / 2, my = y + bh / 2, hb = hash(i * 97 + r * 13 + x);
-        if (a < cut && Math.abs(my - lineY(mx)) < 82 + 34 * hash(i * 7 + r * 3 + x * .1)) continue;   // knocked out
+        if (punched && Math.hypot(mx - hx, my - hy) < HOLE_R * 1.55) continue;                       // knocked out round the hole
         paint(rectPts(a, y + 2, b - a, bh - 4, 1), { wash: BRICK[Math.floor(hb * 4)], washOp: 255, ink: null });
       }
     }
     paint(rectPts(x0 - 6, w.top - 14, w.w + 12, 16, 2), { wash: '#8C6A5A', washOp: 255, ink: PAL.ink, sw: 1 });        // coping
-    // cracks running out from the hole into the bricks
-    if (cut > x0 + 20) for (let k = 0; k < 6; k++) {
-      const cx = x0 + 20 + (Math.min(cut, x1) - x0 - 40) * hash(i * 5 + k), s = k % 2 ? 1 : -1, pts = [[cx, lineY(cx) + s * 92]];
-      for (let j = 1; j < 4; j++) pts.push([cx + 18 * (hash(i + k * 3 + j) - .5) * j, lineY(cx) + s * (92 + j * (26 + 14 * hash(k + j * 5)))]);
-      inkLine(pts, 1, PAL.ink, 'inkfine', 0);
+    if (punched) {
+      paint(holeRim(i, hx, hy, HOLE_R * (1 + .25 * (1 - pAge))), { wash: '#1E1426', washOp: 255, fill: PAL.violet, fillOp: 40, ink: PAL.ink, sw: 1.2 });
+      for (let k = 0; k < 6; k++) {                                                                     // cracks out from the hole
+        const a = k / 6 * TAU + hash(i * 5 + k), pts = [[hx + Math.cos(a) * HOLE_R * 1.3, hy + Math.sin(a) * HOLE_R * 1.3]];
+        for (let j = 1; j < 4; j++) { const aa = a + (hash(i + k * 3 + j) - .5) * .8; pts.push([pts[j - 1][0] + Math.cos(aa) * 26, pts[j - 1][1] + Math.sin(aa) * 26]); }
+        inkLine(pts, 1, PAL.ink, 'inkfine', 0);
+      }
+      if (pAge < 1) paint(ellPts(hx, hy, 70 + 50 * pAge, 70 + 50 * pAge, 18, 5), { fill: '#D8C2B0', fillOp: 160 * (1 - pAge), bleed: .3, ink: null });   // dust puff
     }
     pop();
-    return { x0, x1, cut, age };
-  }
-  // the line inside the wall sits in the hole's shadow, so it reads as passing through, not lying on top
-  function tunnelShade(i, cut) {
-    const w = WALLS[i], x0 = w.x - w.w / 2, x1 = Math.min(cut, w.x + w.w / 2); if (x1 <= x0) return;
-    const h = 21;
-    paint([[x0, lineY(x0) - h], [x1, lineY(x1) - h], [x1, lineY(x1) + h], [x0, lineY(x0) + h]], { fill: '#1E1426', fillOp: 120, bleed: .05, ink: null });
   }
   function debris(i, t) {
     const w = WALLS[i], age = t - (HIT[i] - .05); if (age < 0 || age > 1.3) return;
@@ -174,11 +164,17 @@
     dusk(-200, HZ1);
     logGrid(-200, W + 200, -300, HZ1, 520, mixCol(D_MID, GRID, .45), .5);
     ground(HZ1);
-    const tipX = tipXAt(t), tip = [tipX, lineY(tipX)];
-    // the walls get a line-shaped hole punched behind the tip; the line runs through the holes, shaded inside the wall
+    const tipX = tipXAt(t), glow = 1 + .4 * pulse(t, 5), P_ = x => [x, lineY(x)];
     WALLS.forEach((_, i) => wall(i, t, tipX));
-    beam(LA, tip, 46, 1 + .4 * pulse(t, 5));
-    WALLS.forEach((_, i) => tunnelShade(i, tipX));
+    // the visible pieces of the line: in front of each wall up to its hole, then hidden until it comes out past the far edge
+    let from = LA[0];
+    for (let i = 0; i <= WALLS.length; i++) {
+      if (tipX <= from) break;
+      const stop = i < WALLS.length ? holeX(i) : Infinity;
+      if (tipX <= stop) { beam(P_(from), P_(tipX), 46, glow); break; }                                   // the tip is out here
+      beam(P_(from), P_(stop), 46, glow, false);                                                        // into the hole
+      from = WALLS[i].x + WALLS[i].w / 2;                                                               // out from behind the far edge
+    }
     WALLS.forEach((_, i) => debris(i, t));
     // Skeptics on the rock ledge, megaphones at the walls
     rock(-80, 560, 620, 420);
