@@ -19,10 +19,10 @@
 <body>
 <main>
   <canvas id="out" width="1920" height="1080"></canvas>
-  <div class="bar"><input id="scrub" type="range" min="0" max="237.2" step="0.0417" value="0"><span id="tt">loading…</span></div>
+  <div class="bar"><input id="scrub" type="range" min="0" max="241.2" step="0.0417" value="0"><span id="tt">loading…</span></div>
 </main>
 <script>
-// Reuse the PDoomVideo engine unchanged, except for this song's tempo, length, wipe times and meter windows,
+// Reuse the PDoomVideo engine unchanged, except for this song's tempo, length (the 237.2 s song plus 4 s of end card), wipe times and meter windows,
 // patched into the source as it loads (like video/covers/cover.html). Open via the renderer or a local web server.
 function load(path, patches = []) {
   const req = new XMLHttpRequest(); req.open('GET', path, false); req.send();
@@ -35,7 +35,7 @@ function load(path, patches = []) {
 }
 const E = '../engine/src/';
 load(E + 'core.js', [['const BPM = 88, BEAT = 60 / BPM, OFF = 0.21, BOIL = 12, DUR = 156.6;',
-                      'const BPM = 128.04, BEAT = 60 / BPM, OFF = 0.08, BOIL = 12, DUR = 237.2;']]);
+                      'const BPM = 128.04, BEAT = 60 / BPM, OFF = 0.08, BOIL = 12, DUR = 241.2;']]);
 load(E + 'clawd.js'); load(E + 'cast.js'); load(E + 'props.js');
 load('lyrics.js');
 load(E + 'timeline.js', [['const WIPES = [1.5, 38.5, 73.0, 109.4];', 'const WIPES = [37.57, 97.55, 157.53, 219.39];'],

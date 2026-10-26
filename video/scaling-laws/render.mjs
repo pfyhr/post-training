@@ -3,7 +3,7 @@
 //   node render.mjs --sheet=3.9,4.2,4.6 [--cols=3] [--w=640] [--out=check/c00.jpg]   contact sheet (fast visual check)
 //   node render.mjs --stills=0.8,3,23.8 [--out=stills]                               full-res PNG stills
 //   node render.mjs --clip=0:30 [--fps=24] [--out=clip.mp4]                          short clip with audio
-//   node render.mjs --frames=0:237.2 --workers=4                                     full-res JPEG frames (resumable)
+//   node render.mjs --frames=0:241.2 --workers=4                                     full-res JPEG frames (resumable)
 //   node render.mjs --encode [--out=scaling-laws.mp4]                                frames + song → MP4
 // --ch=c03_wall[,c04_festival] loads only those chapters. At most SLOTS renders run at once across processes
 // (others wait their turn), so several people or agents can check chapters in parallel without swamping the machine.
@@ -16,7 +16,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const args = Object.fromEntries(process.argv.slice(2).map(a => { const [k, v] = a.replace(/^--/, '').split('='); return [k, v ?? true]; }));
 const CHROME = args.chrome || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const DUR = 237.2, fps = +(args.fps || 24);
+const DUR = 241.2, fps = +(args.fps || 24);                  // the 237.2 s song plus 4 s of silent end card
 const OUT = resolve(here, '../../out/video/scaling-laws'), FRAMES_DIR = `${OUT}/frames`;
 const AUDIO = resolve(here, '../../audio/masters/07-scaling-laws.flac');
 const outPath = def => resolve(OUT, args.out || def);
@@ -27,7 +27,7 @@ if (args.encode) {
   const out = outPath('scaling-laws.mp4'), n = readdirSync(FRAMES_DIR).filter(f => f.endsWith('.jpg')).length;
   console.log(`encoding ${n} frames → ${out}`);
   await run('ffmpeg', ['-y', '-loglevel', 'error', '-stats', '-framerate', String(fps), '-i', `${FRAMES_DIR}/f%05d.jpg`, '-i', AUDIO,
-    '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '256k',
+    '-map', '0:v', '-map', '1:a', '-af', 'apad', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '256k',
     '-movflags', '+faststart', '-shortest', out]);
   console.log('wrote ' + out);
   process.exit(0);

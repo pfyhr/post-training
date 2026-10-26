@@ -1,4 +1,4 @@
-// c11_decade.js: 219.39-237.2, bars 118-126 plus the tail. The outro: one last Powers of Ten. Every "Bigger" pulls back
+// c11_decade.js: 219.39-241.2, bars 118-126 plus the tail and a silent end card. The outro: one last Powers of Ten. Every "Bigger" pulls back
 // another level (planet, moon, solar system, galaxy) while Clawd surfs the line, which stays dead straight through it
 // all. The galaxy shrinks to one clay data point on a sheet of log-log paper pinned to the Researcher's drafting board:
 // the cover painting. The line runs off the edge, the Researcher sighs and tapes on a fresh sheet, Clawd rules the
@@ -348,9 +348,11 @@
     letter('Scaling Laws', 960, 390, 150, PAL.clay, { pop: pop(.35), rot: -.03 });
     letter('Post-Training · track 07', 960, 530, 54, PAL.cream, { pop: pop(.65), rot: -.015 });
     letter('a fan album in the Claude-Pop style', 960, 600, 32, soft(PAL.cream, .2), { pop: pop(.8), ink: false });
-    letter('video pipeline: John Heibel / PDoomVideo', 960, 720, 42, PAL.cream, { pop: pop(1.0), rot: -.01 });
-    letter('github.com/JohnHeibel/PDoomVideo', 960, 776, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.1), ink: false });
+    letter('video pipeline: John Heibel / PDoomVideo', 960, 700, 42, PAL.cream, { pop: pop(1.0), rot: -.01 });
+    letter('github.com/JohnHeibel/PDoomVideo', 960, 756, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.1), ink: false });
+    letter('album, lyrics and this video', 960, 850, 42, PAL.cream, { pop: pop(1.3), rot: -.01 });
+    letter('github.com/pfyhr/post-training', 960, 906, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.4), ink: false });
   }
 
-  chapter('decade', 219.39, 237.2, [[219.39, cosmos], [229.8, desk], [T_OFF, endCard]]);
+  chapter('decade', 219.39, DUR, [[219.39, cosmos], [229.8, desk], [T_OFF, endCard]]);
 })();

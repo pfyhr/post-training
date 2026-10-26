@@ -128,14 +128,14 @@ Track 07 of *Post-Training*. 237.2 s, 128.04 BPM, F minor. First downbeat 0.08 s
 | 211.89–217.5 | — | Every light flickers out on the beat, block by block. In the dark, only Clawd's eyes and the Researcher's glasses. **BZZT…** | — |
 | 217.5–219.39 | — | The Researcher finds the master breaker by flashlight, spits on their hands, and pulls. | **CLUNK** on 219.39: all the lights come on at once |
 
-## 11 · Outro: One more decade (219.39–237.2) · paper cream
+## 11 · Outro: One more decade (219.39–241.2) · paper cream
 
 | Time | Lyric | Shot | Out |
 |---|---|---|---|
 | 219.4–227.0 | (Bigger ×4) | Final Powers of Ten zoom-out, slower and grander: planet → solar system → galaxy, the line still dead straight. | — |
 | 227.0–232.5 | (Bigger ×4) | The galaxy shrinks to a dot on a sheet of log-log paper on the Researcher's desk. It's the cover painting. The line runs off the edge of the paper. | — |
 | 232.5–234.38 | — | The Researcher sighs, tears off a new sheet, and tapes it to the edge. Clawd extends the line onto it with a ruler and smiles at camera. | — |
-| 234.38–237.2 | — (tail) | Desk lamp clicks off. End card: title, track credits, and "video pipeline: John Heibel / PDoomVideo" (required by CREDITS.md). | — |
+| 234.38–241.2 | — (tail, then 4 s of silence) | Desk lamp clicks off. End card: title, track credits, "video pipeline: John Heibel / PDoomVideo" (required by CREDITS.md) and our repo, github.com/pfyhr/post-training. It holds 4 s past the end of the song. | — |
 
 ---
 
