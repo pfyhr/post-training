@@ -5,9 +5,11 @@
 //   node render.mjs --clip=0:30 [--fps=24] [--out=clip.mp4]                          short clip with audio
 //   node render.mjs --frames=0:237.2 --workers=4                                     full-res JPEG frames (resumable)
 //   node render.mjs --encode [--out=scaling-laws.mp4]                                frames + song → MP4
+// --ch=c03_wall[,c04_festival] loads only those chapters. At most SLOTS renders run at once across processes
+// (others wait their turn), so several people or agents can check chapters in parallel without swamping the machine.
 import puppeteer from 'puppeteer-core';
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync, existsSync, statSync, renameSync, readdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, statSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
@@ -31,6 +33,21 @@ if (args.encode) {
   process.exit(0);
 }
 
+// a render slot: a lock dir holding our pid; a slot whose process has died is taken over
+const SLOTS = +(args.slots || 3), LOCKS = `${OUT}/locks`; mkdirSync(LOCKS, { recursive: true });
+const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
+let slot = null;
+for (let waited = 0; slot == null; waited++) {
+  for (let i = 0; i < SLOTS && slot == null; i++) {
+    const d = `${LOCKS}/slot${i}`;
+    try { mkdirSync(d); writeFileSync(`${d}/pid`, String(process.pid)); slot = d; }
+    catch { let pid = 0; try { pid = +readFileSync(`${d}/pid`, 'utf8'); } catch {} if (pid && !alive(pid)) rmSync(d, { recursive: true, force: true }); }
+  }
+  if (slot == null) { if (waited % 15 === 0) console.log('waiting for a render slot…'); await new Promise(r => setTimeout(r, 2000)); }
+}
+const release = () => { try { rmSync(slot, { recursive: true, force: true }); } catch {} };
+process.on('exit', release); for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(130));
+
 const browser = await puppeteer.launch({
   executablePath: CHROME, headless: true, protocolTimeout: 0,
   args: ['--allow-file-access-from-files', '--ignore-gpu-blocklist', '--use-angle=metal', '--enable-gpu-rasterization', '--window-size=1920,1080', '--disable-renderer-backgrounding', '--disable-background-timer-throttling']
@@ -40,7 +57,7 @@ async function openPage(tag = '') {
   page.on('console', m => { if (['error', 'warn'].includes(m.type())) console.log(`[page${tag}]`, m.text()); });
   page.on('pageerror', e => console.log(`[page error${tag}]`, e.message));
   // the page pulls its fonts from Google Fonts: allow a slow network and retry once rather than lose a long render
-  const url = pathToFileURL(resolve(here, 'studio.html')).href + '?render';
+  const url = pathToFileURL(resolve(here, 'studio.html')).href + '?render' + (args.ch ? '&ch=' + args.ch : '');
   try { await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 }); }
   catch (e) { console.log(`[page${tag}] ${e.message}, retrying`); await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 }); }
   await page.waitForFunction('window.ready === true', { timeout: 60000 });
@@ -89,7 +106,8 @@ if (args.sheet) {
 } else {
   // Short clip with audio, rendered in parallel into a temp frame folder, then muxed.
   const [a, b] = args.clip ? String(args.clip).split(':').map(Number) : [0, DUR], workers = +(args.workers || 4);
-  const out = outPath('clip.mp4'), tmp = `${OUT}/clip_frames`; mkdirSync(tmp, { recursive: true });
+  const out = outPath('clip.mp4'), tmp = out.replace(/\.mp4$/, '') + '_frames';         // per-output, so clips can't collide
+  rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
   const n = Math.round((b - a) * fps), start = Date.now(); let next = 0, done = 0;
   await Promise.all(Array.from({ length: workers }, async (_, w) => {
     await new Promise(r => setTimeout(r, w * 1500));          // stagger page loads
@@ -101,6 +119,7 @@ if (args.sheet) {
   }));
   await run('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', `${tmp}/c%05d.jpg`, '-ss', String(a), '-t', String(b - a), '-i', AUDIO,
     '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', out]);
+  rmSync(tmp, { recursive: true, force: true });
   console.log(`wrote ${out}`);
 }
 await browser.close();

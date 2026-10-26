@@ -3,7 +3,7 @@
 // each bigger thing. Then the reveal: the lab is a choir of Clawds in hard hats and lab coats, chanting.
 (() => {
   const soft = (c, k = .5) => mixCol(c, PAL.paper, k);
-  const NIGHT = '#1A1F44', GRID = '#3A9C98', SAND = '#D9A15A', STEEL = '#5D6A8C', STEEL_DK = '#3B4466';
+  const { NIGHT, GRID, SAND, STEEL, STEEL_DK, HARD, HARD_LAMP, labCoat } = SL;
   const STEPS = [3, 4, 5, 6, 7, 8].map(barT);            // one decade per bar
   const zoomAt = t => STEPS.reduce((z, s) => z + ease(seg(t, s - .06, s + .5)), 0);
 
@@ -156,21 +156,6 @@
 
   // A proper hard hat (the engine's 'hard' reads as a yellow beanie): tall dome, raised centre ridge, wide flat brim
   // with a dark underside, a headband under the brim, a shine, and an optional headlamp. Body-local, for o.draw.
-  const HAT = '#F5B700', HAT_DK = '#C47F00', HAT_LT = '#FFE07A';
-  const hardHat = (lamp = false) => (u, sw) => {
-    const d = []; for (let i = 0; i <= 16; i++) { const a = Math.PI + i / 16 * Math.PI; d.push([Math.cos(a) * 3.9 * u, -8.5 * u + Math.sin(a) * 3.9 * u]); }
-    paint(d, { wash: HAT, washOp: 255, fill: HAT_DK, fillOp: 50, tex: .4, ink: PAL.ink, sw: sw * .8 });
-    paint(ellPts(-1.9 * u, -10.6 * u, .9 * u, 1.3 * u, 14, 0, .5), { wash: HAT_LT, washOp: 200, ink: null });                  // shine
-    paint(rrPts(-.75 * u, -12.55 * u, 1.5 * u, 4.1 * u, .7 * u), { wash: HAT_DK, washOp: 255, ink: PAL.ink, sw: sw * .7 });  // ridge
-    paint([[-6 * u, -8.75 * u], [6 * u, -8.75 * u], [5.6 * u, -7.95 * u], [-5.6 * u, -7.95 * u]], { wash: HAT, washOp: 255, ink: PAL.ink, sw: sw * .8 }); // brim
-    inkLine([[-5.5 * u, -8.1 * u], [5.5 * u, -8.1 * u]], sw * 1.1, HAT_DK, 'ink', 0);                                        // brim underside
-    if (lamp) {
-      paint(rrPts(-1.1 * u, -10.1 * u, 2.2 * u, 1.3 * u, .4 * u), { wash: STEEL, washOp: 255, ink: PAL.ink, sw: sw * .7 });
-      paint(ellPts(0, -9.45 * u, .55 * u, .5 * u, 12), { wash: PAL.cream, washOp: 255, ink: PAL.ink, sw: sw * .5 });
-      paint(ellPts(0, -9.45 * u, 2.2 * u, 1.8 * u, 18, 1), { fill: PAL.cream, fillOp: 70, bleed: .3, ink: null });
-    }
-  };
-  const HARD = hardHat(), HARD_LAMP = hardHat(true);
 
   // ---------------- 0 – 3.83: dark, the lamp clicks on, Clawd wakes up on the chip ----------------
   function lamp(t, lt) {
@@ -200,12 +185,6 @@
   }
 
   // ---------------- 15.08 – 30.07: the reveal: the lab is a choir ----------------
-  const labCoat = (u, sw) => {
-    paint(rectPts(-5.15 * u, -3.7 * u, 10.3 * u, 1.85 * u, u * .05), { wash: PAL.cream, washOp: 255, ink: PAL.ink, sw: sw * .7 });
-    inkLine([[-1.2 * u, -3.7 * u], [0, -2.6 * u], [1.2 * u, -3.7 * u]], sw * .6, PAL.ink, 'inkfine', 0);
-    paint(rectPts(2.2 * u, -3.4 * u, 1.3 * u, .9 * u, u * .03), { ink: PAL.ink, sw: sw * .5 });
-    inkLine([[2.6 * u, -3.75 * u], [2.6 * u, -3.1 * u]], sw * .6, PAL.indigo, 'inkfine', 0);
-  };
   const ROWS = [{ y: 600, u: 10, n: 11, dx: 140 }, { y: 760, u: 12.5, n: 9, dx: 170 }, { y: 930, u: 15, n: 7, dx: 215 }];
   function choir(t, build) {
     paint(rectPts(-600, -600, W + 1200, H + 1200), { wash: NIGHT, washOp: 255, fill: PAL.indigo, fillOp: 60, bleed: .2, tex: .5, ink: null });
