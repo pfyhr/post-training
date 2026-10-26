@@ -39,13 +39,17 @@
   // the air glow over the horizon (the planet's limb in the build): two thin washes
   const atmo = (cx = 960, cy = HZ + 1e5, R = 1e5, g = 46) => { for (const k of [1, .45]) paint(planetPts(cx, cy, R + g * k), { wash: PAL.sky, washOp: 34, ink: null }); };
   function L0(s = 1) {
-    const fade = seg(s, .97, .5), dk = mixCol(DUNE, SAND_N, fade);                                      // far ripples and the dune; all filled shapes, so it can shrink
+    // far ripples and the dune; all filled shapes, so it can shrink. Pulling back, the dune body melts into the desert
+    // (colour and opacity), so its big flat edges never cut the desert rows below as hard seams; the starlit crest stays.
+    const fade = seg(s, .97, .5), dk = mixCol(DUNE, SAND_N, fade), dOp = 255 * (1 - fade);
     for (let i = 0; i < 7; i++) {
       const y = 552 + 26 * i + 9 * i * i, x = 960 + (i % 2 ? 1 : -1) * (180 + 260 * hash(i + 3)), w = (y - 540) * 4.5 + 60;
       paint(ellPts(x, y, w, (y - 540) * .14 + 2, 20, 0), { wash: i % 2 ? SAND_LT : DUNE, washOp: 90, ink: null });
     }
-    if (s < .95) paint([[-1400, 700], [-380, 690], [-380, 2600], [-1400, 2600]], { wash: dk, washOp: 255, ink: null });   // the dune runs on past the frame
-    paint([[-400, 2600], ...CREST, [1500, 2600]], { wash: dk, washOp: 255, fill: PAL.violet, fillOp: 30 * (1 - fade), tex: .6, ink: null, curv: .4 });
+    if (dOp > 2) {
+      if (s < .95) paint([[-1400, 700], [-380, 690], [-380, 2600], [-1400, 2600]], { wash: dk, washOp: dOp, ink: null });   // the dune runs on past the frame
+      paint([[-400, 2600], ...CREST, [1500, 2600]], { wash: dk, washOp: dOp, fill: PAL.violet, fillOp: 30 * (1 - fade), tex: .6, ink: null, curv: .4 });
+    }
     const rim = []; for (const [x, y] of CREST.slice(0, 9)) rim.push([x, y - 1]); for (const [x, y] of CREST.slice(0, 9).reverse()) rim.push([x, y + 14 + (x > 700 ? (x - 700) * .02 : 0)]);
     paint(rim, { wash: SAND_LT, washOp: 200, ink: null, curv: .4 });                                 // starlit crest
     if (s > .4) for (let i = 0; i < 5; i++) paint(ellPts(150 + i * 170, 760 + 60 * hash(i + 9), 90, 9, 12, 2, -.06), { wash: SAND_LT, washOp: 70, ink: null }); // wind ripples
