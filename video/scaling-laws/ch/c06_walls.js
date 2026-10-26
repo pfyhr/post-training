@@ -100,31 +100,37 @@
   const LA = [-100, 1000], LD = [2200, -750], LN = Math.hypot(...LD), LDN = [LD[0] / LN, LD[1] / LN];
   const lineY = x => LA[1] + (x - LA[0]) * LD[1] / LD[0];
   const BRICK = ['#A8553A', '#B8664A', '#94472F', '#B05A3E'];
-  function wall(i, t) {
-    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, hy = lineY(w.x), hr = 44;
+  // a wall, split along the line wherever the tip has already been: a ragged line-shaped gap with the dark beyond
+  const GAP = 42;                                                                     // gap half-height around the line
+  const gapEdge = (i, x, side) => lineY(x) + side * GAP * (.75 + .5 * hash(i * 13 + Math.round(x / 18) * 7 + (side > 0 ? 3 : 0)));
+  function wall(i, t, tipX) {
+    const w = WALLS[i], hit = HIT[i] - .05, age = t - hit, x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, cut = Math.min(x1 + 30, tipX);
     const jolt = age > 0 ? Math.sin(age * 30) * Math.exp(-age * 7) : 0;
     push(); translate(w.x, HZ1); rotate(jolt * .04); translate(-w.x + jolt * 10, -HZ1);
     paint(rectPts(x0, w.top, w.w, HZ1 - w.top, 2), { wash: '#5A3A34', washOp: 255, ink: PAL.ink, sw: 1.3 });
+    if (cut > x0) {                                                                   // the gap, drawn under the bricks so they break its edge
+      const xs = []; for (let x = x0 - 6; x < cut; x += 18) xs.push(x); xs.push(cut);
+      paint(xs.map(x => [x, gapEdge(i, x, -1)]).concat(xs.slice().reverse().map(x => [x, gapEdge(i, x, 1)])),
+        { wash: '#1E1426', washOp: 255, fill: PAL.violet, fillOp: 50, tex: .4, ink: PAL.ink, sw: 1.1 });
+    }
     const bh = 34, bw = 62;
     for (let r = 0, y = HZ1 - bh; y > w.top - 1; r++, y -= bh) {
-      for (let x = x0 + (r % 2 ? -bw / 2 : 0); x < x0 + w.w; x += bw) {
-        const a = Math.max(x, x0) + 2, b = Math.min(x + bw, x0 + w.w) - 2; if (b - a < 8) continue;
-        if (age > 0 && Math.hypot((a + b) / 2 - w.x, y + bh / 2 - hy) < hr * 1.35) continue;
+      for (let x = x0 + (r % 2 ? -bw / 2 : 0); x < x1; x += bw) {
+        const a = Math.max(x, x0) + 2, b = Math.min(x + bw, x1) - 2; if (b - a < 8) continue;
+        const mx = (a + b) / 2, my = y + bh / 2;
+        if (mx < cut && my > gapEdge(i, mx, -1) - bh * .25 && my < gapEdge(i, mx, 1) + bh * .25) continue;   // knocked out
         paint(rectPts(a, y + 2, b - a, bh - 4, 1), { wash: BRICK[Math.floor(hash(i * 97 + r * 13 + x) * 4)], washOp: 255, ink: null });
       }
     }
     paint(rectPts(x0 - 6, w.top - 14, w.w + 12, 16, 2), { wash: '#8C6A5A', washOp: 255, ink: PAL.ink, sw: 1 });        // coping
-    if (age > 0) {
-      paint(starPts(w.x, hy, hr * 1.3, .72, 9, hash(i) * 3), { wash: '#2A1A22', washOp: 255, ink: PAL.ink, sw: 1 });
-      if (age < .5) paint(ellPts(w.x, hy, hr * 2.5 * easeOut(age * 3), hr * 2.5 * easeOut(age * 3), 20, 4), { fill: GOLD, fillOp: 180 * (1 - age * 2), bleed: .3, ink: null });
-    }
+    if (age > 0 && age < .5) paint(ellPts(x1, lineY(x1), 110 * easeOut(age * 3), 110 * easeOut(age * 3), 20, 4), { fill: GOLD, fillOp: 180 * (1 - age * 2), bleed: .3, ink: null });
     pop();
-    return { hy, age };
+    return { age };
   }
   function debris(i, t) {
     const w = WALLS[i], age = t - (HIT[i] - .05); if (age < 0 || age > 1.2) return;
-    const x0 = w.x + w.w / 2, y0 = lineY(w.x);
-    for (let k = 0; k < 9; k++) {
+    const x0 = w.x + w.w / 2, y0 = lineY(x0);
+    for (let k = 0; k < 12; k++) {
       const h1 = hash(i * 31 + k), h2 = hash(i * 17 + k * 5 + 3), vx = 250 + 650 * h1, vy = -350 - 650 * h2;
       const x = x0 + vx * age, y = y0 + vy * age + 1500 * age * age; if (y > HZ1 + 60) continue;
       push(); translate(x, y); rotate(age * (6 + 8 * h1) * (k % 2 ? 1 : -1));
@@ -148,12 +154,9 @@
     ground(HZ1);
     const tipX = kf(t, [[S1, 560], [barT(65) - .1, 600], [HIT[0], 925], [HIT[1], 1285], [HIT[2], 1655], [HIT[2] + .5, 1860]], ease);
     const tip = [tipX, lineY(tipX)];
-    // walls behind, the line through them, then the walls' near faces are open holes so the beam reads as skewering
-    const ws = WALLS.map((_, i) => wall(i, t));
+    // the walls split open along the line behind the tip, then the line itself lies in the gaps
+    WALLS.forEach((_, i) => wall(i, t, tipX));
     beam(LA, tip, 46, 1 + .4 * pulse(t, 5));
-    ws.forEach((s, i) => { if (s.age > 0) { const w = WALLS[i];                // the wall's front lip over the beam: a ring of bricks around the hole
-      for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * .38 + Math.PI; const bx = w.x + Math.cos(a) * 52 - 2, by = s.hy + Math.sin(a) * 52;
-        if (Math.abs(bx - w.x) < w.w / 2 - 10) paint(rectPts(bx - 14, by - 8, 28, 16, 1), { wash: BRICK[k % 4], washOp: 255, ink: PAL.ink, sw: .6 }); } } });
     WALLS.forEach((_, i) => debris(i, t));
     // Skeptics on the rock ledge, megaphones at the walls
     rock(-80, 560, 620, 420);
