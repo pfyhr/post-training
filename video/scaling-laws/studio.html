@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Scaling Laws studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Shantell+Sans:wght@800&display=block">
+<style>
+  html, body { margin: 0; background: #1b1820; color: #eee; font: 13px system-ui, sans-serif; }
+  main { padding: 12px; display: grid; gap: 8px; }
+  #out { width: min(100%, 1280px); aspect-ratio: 16 / 9; height: auto; background: #F3EBDC; }
+  .p5Canvas { display: none !important; }
+  .bar { display: flex; gap: 10px; align-items: center; max-width: 1280px; }
+  #scrub { flex: 1; }
+  #tt { font-variant-numeric: tabular-nums; min-width: 190px; }
+</style>
+<script src="../engine/node_modules/p5/lib/p5.min.js"></script>
+<script src="../engine/node_modules/p5.brush/dist/p5.brush.js"></script>
+</head>
+<body>
+<main>
+  <canvas id="out" width="1920" height="1080"></canvas>
+  <div class="bar"><input id="scrub" type="range" min="0" max="241.2" step="0.0417" value="0"><span id="tt">loading…</span></div>
+</main>
+<script>
+// Reuse the PDoomVideo engine unchanged, except for this song's tempo, length (the 237.2 s song plus 4 s of end card), wipe times and meter windows,
+// patched into the source as it loads (like video/covers/cover.html). Open via the renderer or a local web server.
+function load(path, patches = []) {
+  const req = new XMLHttpRequest(); req.open('GET', path, false); req.send();
+  let src = req.responseText;
+  for (const [from, to] of patches) {
+    if (!src.includes(from)) throw new Error(`${path}: patch target not found: ${from}`);
+    src = src.replace(from, to);
+  }
+  const s = document.createElement('script'); s.textContent = src + `\n//# sourceURL=${path}`; document.body.appendChild(s);
+}
+const E = '../engine/src/';
+load(E + 'core.js', [['const BPM = 88, BEAT = 60 / BPM, OFF = 0.21, BOIL = 12, DUR = 156.6;',
+                      'const BPM = 128.04, BEAT = 60 / BPM, OFF = 0.08, BOIL = 12, DUR = 241.2;'],
+                     // exponents: the marker font only has ¹²³, so draw every superscript digit ourselves (supText, timeline.js)
+                     ['c.fillText(L.txt, L.size * .045, L.size * .055); }', 'supText(c, L.txt, L.size * .045, L.size * .055); }'],
+                     ['c.fillStyle = L.color; c.fillText(L.txt, 0, 0);', 'c.fillStyle = L.color; supText(c, L.txt, 0, 0);']]);
+load(E + 'clawd.js'); load(E + 'cast.js'); load(E + 'props.js');
+load('lyrics.js');
+load(E + 'timeline.js', [['const WIPES = [1.5, 38.5, 73.0, 109.4];', 'const WIPES = [37.57, 97.55, 157.53, 219.39];'],
+                         ['const METER = [[23, 35.5, 8, 34], [59, 69.9, 34, 61], [95.4, 105.4, 61, 86], [123.5, 132, 86, 99.9]];',
+                          'const METER = [[75.06, 97.55, 3.2, 2.6], [135.04, 157.53, 2.6, 2.1], [191.27, 211.89, 2.1, 1.7]];']]);
+load('timeline.js');
+load('vox.js');
+load('sl_cast.js');
+var CAST = {};  // characters shared between chapters
+// ?ch=c03_wall,c04_festival loads only those chapters (for checking one chapter while others are being written);
+// otherwise every chapter that exists so far is loaded.
+const CHAPTERS = ['c00_bigger', 'c01_lab', 'c02_zero', 'c03_wall', 'c04_festival', 'c05_chinchilla', 'c06_walls',
+                  'c07_gigawatt', 'c08_prophecy', 'c09_planet', 'c10_brownout', 'c11_decade'];
+const only = new URLSearchParams(location.search).get('ch');
+(only ? only.split(',') : CHAPTERS).forEach(c => {
+  try { load(`ch/${c}.js`); } catch (e) { if (only) throw e; console.log(`skipping ${c}: ${e.message}`); }
+});
+</script>
+</body>
+</html>
