@@ -27,3 +27,5 @@ The references inside the songs credit their sources in each track's glossary: R
 - Every upload description opens with: *"A fan album after Claude-Pop's 'I'm Upping My P(doom)' (lyrics by osmarks, recording by deckard @slimer48484, video by John Heibel)."*
 - Track 01 is never re-uploaded by us. Link to deckard's post and John's video instead.
 - Videos that reuse the PDoomVideo pipeline or Clawd character credit the repo in the description and in the end card.
+
+Published so far: [07 Scaling Laws](https://www.youtube.com/watch?v=TGXB14GwXeE) (October 2026), built on PDoomVideo and credited as above.

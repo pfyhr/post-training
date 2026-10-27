@@ -81,6 +81,8 @@ Code (`tools/`, `video/covers/`) is MIT: see [LICENSE](LICENSE). Lyrics, prompts
 CC BY 4.0: see [LICENSE-CONTENT.md](LICENSE-CONTENT.md), which also lists what isn't ours to license (track 01,
 and the PDoomVideo engine). The audio for tracks 02–10 is CC BY 4.0 too, and downloadable as MP3 and FLAC from [Releases](https://github.com/pfyhr/post-training/releases).
 
-## Later: videos
+## Videos
+
+- **07 Scaling Laws**: [watch on YouTube](https://www.youtube.com/watch?v=TGXB14GwXeE). Source and storyboard in [video/scaling-laws](video/scaling-laws/).
 
 Each track will get a painted p5.brush video in the style of [JohnHeibel/PDoomVideo](https://github.com/JohnHeibel/PDoomVideo). That needs the final audio first, so lyric timings can be taken from the actual takes.
