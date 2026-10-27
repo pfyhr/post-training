@@ -348,10 +348,11 @@
     letter('Scaling Laws', 960, 390, 150, PAL.clay, { pop: pop(.35), rot: -.03 });
     letter('Post-Training · track 07', 960, 530, 54, PAL.cream, { pop: pop(.65), rot: -.015 });
     letter('a fan album in the Claude-Pop style', 960, 600, 32, soft(PAL.cream, .2), { pop: pop(.8), ink: false });
-    letter('video pipeline: John Heibel / PDoomVideo', 960, 700, 42, PAL.cream, { pop: pop(1.0), rot: -.01 });
-    letter('github.com/JohnHeibel/PDoomVideo', 960, 756, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.1), ink: false });
-    letter('album, lyrics and this video', 960, 850, 42, PAL.cream, { pop: pop(1.3), rot: -.01 });
-    letter('github.com/pfyhr/post-training', 960, 906, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.4), ink: false });
+    letter('video pipeline: John Heibel / PDoomVideo', 960, 690, 42, PAL.cream, { pop: pop(1.0), rot: -.01 });
+    letter('github.com/JohnHeibel/PDoomVideo', 960, 742, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.1), ink: false });
+    letter('youtu.be/8j-hR4fJywU', 960, 784, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.2), ink: false });
+    letter('album, lyrics and this video', 960, 866, 42, PAL.cream, { pop: pop(1.3), rot: -.01 });
+    letter('github.com/pfyhr/post-training', 960, 918, 28, mixCol(PAL.teal, PAL.cream, .35), { pop: pop(1.4), ink: false });
   }
 
   chapter('decade', 219.39, DUR, [[219.39, cosmos], [229.8, desk], [T_OFF, endCard]]);
