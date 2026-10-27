@@ -35,7 +35,10 @@ function load(path, patches = []) {
 }
 const E = '../engine/src/';
 load(E + 'core.js', [['const BPM = 88, BEAT = 60 / BPM, OFF = 0.21, BOIL = 12, DUR = 156.6;',
-                      'const BPM = 128.04, BEAT = 60 / BPM, OFF = 0.08, BOIL = 12, DUR = 241.2;']]);
+                      'const BPM = 128.04, BEAT = 60 / BPM, OFF = 0.08, BOIL = 12, DUR = 241.2;'],
+                     // exponents: the marker font only has ¹²³, so draw every superscript digit ourselves (supText, timeline.js)
+                     ['c.fillText(L.txt, L.size * .045, L.size * .055); }', 'supText(c, L.txt, L.size * .045, L.size * .055); }'],
+                     ['c.fillStyle = L.color; c.fillText(L.txt, 0, 0);', 'c.fillStyle = L.color; supText(c, L.txt, 0, 0);']]);
 load(E + 'clawd.js'); load(E + 'cast.js'); load(E + 'props.js');
 load('lyrics.js');
 load(E + 'timeline.js', [['const WIPES = [1.5, 38.5, 73.0, 109.4];', 'const WIPES = [37.57, 97.55, 157.53, 219.39];'],

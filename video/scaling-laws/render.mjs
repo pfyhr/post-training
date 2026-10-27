@@ -25,6 +25,9 @@ const run = (cmd, a) => new Promise((ok, bad) => { const p = spawn(cmd, a, { std
 
 if (args.encode) {
   const out = outPath('scaling-laws.mp4'), n = readdirSync(FRAMES_DIR).filter(f => f.endsWith('.jpg')).length;
+  // ffmpeg's f%05d input stops at the first gap, so a single missing frame would silently cut the video short
+  const gaps = []; for (let i = 0; i < Math.ceil(DUR * fps); i++) { const f = `${FRAMES_DIR}/f${String(i).padStart(5, '0')}.jpg`; if (!existsSync(f) || statSync(f).size < 1000) gaps.push(i); }
+  if (gaps.length) { console.error(`missing frames: ${gaps.slice(0, 20).join(', ')}${gaps.length > 20 ? ' …' : ''}`); process.exit(1); }
   console.log(`encoding ${n} frames → ${out}`);
   await run('ffmpeg', ['-y', '-loglevel', 'error', '-stats', '-framerate', String(fps), '-i', `${FRAMES_DIR}/f%05d.jpg`, '-i', AUDIO,
     '-map', '0:v', '-map', '1:a', '-af', 'apad', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '256k',
