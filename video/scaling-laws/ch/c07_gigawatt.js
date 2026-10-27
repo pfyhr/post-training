@@ -1,6 +1,6 @@
 // c07_gigawatt.js: 135.04-157.53, bars 73-84. Chorus 2. The gold flood from the broken dam drains away and the
 // festival is ten times bigger: a stage on the roof of the campus, a building-sized lead Clawd in the chrome robot
-// helmet, a crowd of thousands of dots. The loss line is a ski run, lightning lights the town to the horizon, the
+// helmet, a crowd of thousands of dots. The loss line is a ski run, lightning drains the town to feed the campus, the
 // lead Clawd hugs a power station while the choir pedals generators, and the choir holds up their falling-loss
 // placards until everything snaps to black on the last syllable.
 (() => {
@@ -259,27 +259,57 @@
       { town: .3, hero: { ...roof, dy: roof.dy * .6, aL: roof.aL + .2, aR: roof.aR + .2 } });
   }
 
-  // ---------------- 144.41: lightning hits a pylon on the downbeat; the town lights block by block ----------------
+  // ---------------- 144.41: lightning hits a pylon on the downbeat; the town goes dark block by block, its power runs to the campus ----------------
   const THZ = 360, RK = .55, rowY = r => THZ + 540 / (1 + RK * r), rowF = r => 1 / (1 + RK * r);
-  const spread = t => { const b = (t - barT(78)) / BEAT; if (b < 0) return -1; const bb = Math.floor(b) + easeOut(clamp(frac(b) * 3)); return 1.7 * Math.pow(bb + .6, 2); };
-  const ringOf = (c, r) => Math.hypot(c + 1.8, r * 1.6);
+  const B78 = 77 * 4;                                        // beat index of the strike
+  // darkness radius: steps out on each beat after the strike, the whole town is black by the last beat
+  const STEPS = [-1, 2.2, 4.2, 6.6, 9.6, 14, 30, 400];
+  const spread = t => { const b = (t - bt(B78)) / BEAT, n = Math.floor(b); if (n < 1) return -1; return lerp(STEPS[Math.min(7, n - 1)], STEPS[Math.min(7, n)], easeOut(clamp(frac(b) * 3))); };
+  const ringOf = (x, r) => Math.hypot((x - 360) / 180, r * 2);
   const BOLT = [[480, -80], [300, 20], [440, 100], [286, 180], [404, 240], [326, 290], [362, 318]];
   const PYL = [[360, 950, 620], [760, 712, 330], [1040, 610, 200], [1230, 548, 128], [1370, 508, 84], [1470, 482, 56], [1545, 463, 38]];
+  const CAMPUS = [1680, 420];
+  // the cable as one path: pylon tops, sagging between, then into the campus
+  const CABLE = (() => {
+    const P = [];
+    PYL.forEach(([x, y, h], i) => {
+      if (i) { const [px, py, ph] = PYL[i - 1]; P.push([(px + x) / 2 + 20, (py - .8 * ph + y - .8 * h) / 2 + 26 * (h / 300)]); }
+      P.push([x - .34 * h, y - .8 * h], [x + .34 * h, y - .8 * h]);
+    });
+    P.push([CAMPUS[0] - 155, CAMPUS[1] - 30]);
+    const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+    return { P, L, at: q => { const s = q * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++; const k = clamp((s - L[i - 1]) / (L[i] - L[i - 1])); return [lerp(P[i - 1][0], P[i][0], k), lerp(P[i - 1][1], P[i][1], k), lerp(1, .06, q)]; } };
+  })();
   function block(x, y, f, lit, flare) {
     const w = 150 * f, h = 70 * f, rh = 44 * f;
-    paint([[x - w / 2, y - h], [x - w / 2 + 14 * f, y - h - rh], [x + w / 2 + 14 * f, y - h - rh], [x + w / 2, y - h]], { wash: lit ? '#8E6A7E' : '#4A3A66', washOp: 255, ink: PAL.ink, sw: .5 + .4 * f });
-    paint(rectPts(x - w / 2, y - h, w, h, f), { wash: lit ? '#6E4A66' : '#2A2042', washOp: 255, ink: PAL.ink, sw: .5 + .5 * f });
+    paint([[x - w / 2, y - h], [x - w / 2 + 14 * f, y - h - rh], [x + w / 2 + 14 * f, y - h - rh], [x + w / 2, y - h]], { wash: lit ? '#8E6A7E' : '#2E2648', washOp: 255, ink: PAL.ink, sw: .5 + .4 * f });
+    paint(rectPts(x - w / 2, y - h, w, h, f), { wash: lit ? '#6E4A66' : '#1A1428', washOp: 255, ink: PAL.ink, sw: .5 + .5 * f });
     if (lit) {
       if (f > .3) paint(ellPts(x, y - h * .4, w * .9, h * 1.2, 16, 2), { fill: GOLD, fillOp: 90 + 120 * flare, bleed: .3, ink: null });
       for (let j = 0; j < 3; j++) paint(rectPts(x - w / 2 + w * (.12 + j * .3), y - h * .75, w * .18, h * .4, 0), { wash: flare > .3 ? '#FFF5E2' : GOLD_LT, washOp: 255, ink: null });
     }
   }
+  // the data-centre campus on the horizon: g grows with every block it swallows
+  function campus(t, g) {
+    const [x, y] = CAMPUS;
+    paint(ellPts(x, y - 40, 170 + 190 * g, 70 + 110 * g, 24, 5), { fill: GOLD, fillOp: 60 + 190 * g, bleed: .35, ink: null });
+    paint(ellPts(x, y - 40, 110 + 120 * g, 45 + 60 * g, 20, 4), { fill: GOLD_LT, fillOp: 230 * g, bleed: .3, ink: null });
+    if (g > .4) beams(t, [[x - 60, y - 60, -.3], [x + 20, y - 60, -.12]].slice(0, g > .7 ? 2 : 1));
+    for (const [hx, hw, hh] of [[x - 110, 90, 44], [x - 10, 120, 62], [x + 108, 84, 38]]) {
+      paint(rectPts(hx - hw / 2, y - hh, hw, hh, 1), { wash: '#3A3E66', washOp: 255, ink: PAL.ink, sw: .7 });
+      paint(rectPts(hx - hw / 2 - 4, y - hh - 6, hw + 8, 7, 0), { wash: STEEL, ink: PAL.ink, sw: .5 });
+      for (let k = 0; k < 2; k++) for (let j = 0; j < Math.floor(hw / 14); j++)
+        paint(rectPts(hx - hw / 2 + 6 + j * 14, y - hh + 8 + k * hh * .44, 9, hh * .3, 0), { wash: mixCol(GOLD, '#FFFDF4', clamp(g)), washOp: 255, ink: null });
+      paint(rectPts(hx - hw / 2, y - hh, hw, 3, 0), { wash: NEON, washOp: 120 + 135 * pulse(t, 5), ink: null });
+    }
+    if (g > .05) paint(ellPts(x - 10, y - 40, 110 + 60 * g, 60 + 30 * g, 18, 2), { fill: '#FFFDF4', fillOp: 140 * g * pulse(t, 4), bleed: .3, ink: null });
+  }
   function lightning(t, lt, dur) {
     const a = lt, [sx, sy] = shakeXY(t, 14 * Math.exp(-a * 5) + 2 * pulse(t, 8)), z = lerp(1.06, .94, ease(lt / dur));
-    const cam = { cx: 960 + sx, cy: lerp(540, 500, ease(lt / dur)) + sy, z }, sp = spread(t);
+    const cam = { cx: 960 + sx, cy: lerp(540, 500, ease(lt / dur)) + sy, z }, sp = spread(t), swallowed = clamp((spread(t) < 0 ? 0 : Math.floor((t - bt(B78)) / BEAT) + easeOut(clamp(frac((t - bt(B78)) / BEAT) * 3)) - 1) / 7);
     camBegin(cam.cx, cam.cy, cam.z);
-    sky(THZ, t, .7);
-    paint(rectPts(-800, THZ, W + 1600, 1600), { wash: '#33223F', washOp: 255, fill: DUSK, fillOp: 80, tex: .6, ink: null });
+    sky(THZ, t, .7 * (1 - .6 * swallowed));
+    paint(rectPts(-800, THZ, W + 1600, 1600), { wash: mixCol('#33223F', '#16101E', swallowed), washOp: 255, fill: DUSK, fillOp: 80 * (1 - swallowed), tex: .6, ink: null });
     inkLine([[-800, THZ], [W + 800, THZ]], .7, PAL.ink, 'inkfine', 0);
     // the storm cloud the bolt drops out of
     for (let i = 0; i < 5; i++) paint(ellPts(260 + i * 70, 20 + 18 * Math.sin(i * 2.1), 110, 60, 18, 4), { wash: '#2A2050', washOp: 255, fill: PAL.indigo, fillOp: 80, ink: i === 2 ? PAL.ink : null, sw: .8 });
@@ -290,33 +320,39 @@
         const f = rowF(r), y = rowY(r), n = Math.ceil(1500 / (260 * f));
         for (let ci = -n; ci <= n; ci++) {
           if (hash(r * 131 + ci) < .18) continue;
-          const x = 960 + (ci - .5) * 260 * f, w = 150 * f, h = 70 * f + 44 * f, on = ringOf(ci, r) < sp;
-          c.fillStyle = on ? '#6E4A66' : '#2A2042'; c.fillRect(x - w / 2, y - h, w, h);
+          const x = 960 + (ci - .5) * 260 * f, w = 150 * f, h = 70 * f + 44 * f, on = ringOf(x, r) >= sp;
+          c.fillStyle = on ? '#6E4A66' : '#1A1428'; c.fillRect(x - w / 2, y - h, w, h);
           if (on) { c.fillStyle = hash(r + ci * 3) > .4 ? GOLD_LT : '#FFF5E2'; c.fillRect(x - w * .35, y - h * .55, w * .7, Math.max(1, h * .25)); }
         }
       }
     });
     camBegin(cam.cx, cam.cy, cam.z);
+    campus(t, .1 + .9 * swallowed + .3 * swallowed * pulse(t, 4));
     for (let r = 4; r >= 0; r--) {
       const f = rowF(r), y = rowY(r), n = Math.ceil(1300 / (260 * f));
       for (let ci = -n; ci <= n; ci++) {
         const x = 960 + (ci - .5) * 260 * f; if (r <= 1 && Math.abs(x - 360) < 170) continue;
         if (hash(r * 131 + ci) < .12) continue;
-        const ring = ringOf(ci, r), on = ring < sp, flare = on ? 1 - clamp((sp - ring) / 3) : 0;
+        const ring = ringOf(x, r), on = ring >= sp, flare = on ? clamp(1 - (ring - sp) / 3) * pulse(t, 3) : 0;
         block(x, y, f, on, flare);
       }
     }
-    // pylons marching into town, cables glowing as the power runs along them
+    // pylons marching to the campus, cables live once the bolt lands
     const hit = Math.exp(-a * 2.2);
     PYL.forEach(([x, y, h], i) => {
-      const live = clamp((sp - i * 2.2) / 2);
-      if (i) { const [px, py, ph] = PYL[i - 1]; inkLine([[px + .34 * ph, py - .8 * ph], [(px + x) / 2 + 20, (py - .8 * ph + y - .8 * h) / 2 + 26 * (h / 300)], [x - .34 * h, y - .8 * h]], .5 + h / 300, mixCol('#2B2233', NEON, live), 'inkfine', .6); }
-      pylon(x, y, h, i === 0 ? Math.max(hit, .3 * pulse(t, 4)) : live * .6 * pulse(t, 3));
+      if (i) { const [px, py, ph] = PYL[i - 1]; inkLine([[px + .34 * ph, py - .8 * ph], [(px + x) / 2 + 20, (py - .8 * ph + y - .8 * h) / 2 + 26 * (h / 300)], [x - .34 * h, y - .8 * h]], .5 + h / 300, mixCol('#2B2233', GOLD, .5), 'inkfine', .6); }
+      pylon(x, y, h, i === 0 ? Math.max(hit, .3 * pulse(t, 4)) : .5 * pulse(t - i * .04, 3));
     });
-    // a spark of current riding the cable on each beat
-    if (sp > 0) { const q = frac(bpOf(t)), i = Math.min(PYL.length - 2, Math.floor(bpOf(t) - bpOf(barT(78))) % (PYL.length - 1)), [x0, y0, h0] = PYL[i], [x1, y1, h1] = PYL[i + 1];
-      const px = lerp(x0 + .34 * h0, x1 - .34 * h1, q), py = lerp(y0 - .8 * h0, y1 - .8 * h1, q);
-      paint(ellPts(px, py, 22, 22, 14, 2), { fill: NEON, fillOp: 200, bleed: .3, ink: null }); paint(ellPts(px, py, 6, 6, 10), { wash: '#E9FFFB', ink: null }); }
+    const [lx, ly, lh] = PYL[PYL.length - 1];
+    inkLine([[lx + .34 * lh, ly - .8 * lh], [CAMPUS[0] - 155, CAMPUS[1] - 30]], .6, mixCol('#2B2233', GOLD, .5), 'inkfine', 0);
+    // blobs of the town's power riding the cable to the campus; a wave leaves each beat and lands two beats later
+    const b0 = beatN(t);
+    for (let k = Math.max(B78, b0 - 2); k <= Math.min(b0, B78 + 6); k++) for (let j = 0; j < 3; j++) {
+      const q = Math.pow((t - bt(k)) / (2 * BEAT), 1.4) - j * .045; if (q < 0 || q > 1) continue;
+      const [px, py, s] = CABLE.at(q), r = 30 * s + 6;
+      paint(ellPts(px, py, r * 1.8, r * 1.8, 14, 2), { fill: GOLD, fillOp: 170, bleed: .3, ink: null });
+      paint(ellPts(px, py, r * .75, r * .75, 10), { wash: GOLD_LT, ink: null });
+    }
     // the bolt
     const on = a < .3 && !(a > .08 && a < .13);
     if (on) {
@@ -325,7 +361,7 @@
       paint(ellPts(362, 318, 160, 110, 20, 6), { fill: '#E9FFFB', fillOp: 160, bleed: .3, ink: null });
       paint(band(.7), { wash: '#FFF5E2', washOp: 255, ink: PAL.ink, sw: .9 });
     }
-    // strike bloom round the pylon (a full-frame white flash washed the dark town out to lavender)
+    // strike bloom round the pylon
     const bl = Math.exp(-a * 7);
     if (bl > .05) paint(ellPts(362, 330, 420 * (1.4 - .4 * bl), 300 * (1.4 - .4 * bl), 24, 6), { fill: NEON, fillOp: 120 * bl, bleed: .35, ink: null });
     camEnd();

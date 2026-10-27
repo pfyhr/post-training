@@ -63,5 +63,7 @@ const SL = (() => {
     clawd(x, y, u, { draw: robotHelmet(o.glow ?? helmetGlow(t), o.helmet), ...o });
     for (const [side, a] of [[-1, o.aL ?? .2], [1, o.aR ?? .2]]) if (a > .35) overArm(x, y, u, side, a, o);
   };
-  return { robotHelmet, helmetGlow, overArm, robotClawd, NIGHT, GRID, SAND, STEEL, STEEL_DK, HAT, HAT_DK, HAT_LT, hardHat, HARD, HARD_LAMP, labCoat };
+  // a choir mouth driven by the vocal track (vox.js); seed staggers singers by a few ms so the choir isn't a single sprite
+  const sing = (t, seed = 0) => { const v = VOX(t + .03 * (hash(seed) - .5)); return v > .55 ? 'O' : v > .3 ? 'o' : 'flat'; };
+  return { sing, robotHelmet, helmetGlow, overArm, robotClawd, NIGHT, GRID, SAND, STEEL, STEEL_DK, HAT, HAT_DK, HAT_LT, hardHat, HARD, HARD_LAMP, labCoat };
 })();

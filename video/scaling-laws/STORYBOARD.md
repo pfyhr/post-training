@@ -50,7 +50,7 @@ Track 07 of *Post-Training*. 237.2 s, 128.04 BPM, F minor. First downbeat 0.08 s
 |---|---|---|---|
 | 37.3–43.0 | Ten to the twenty-three… cute, could rhyme | Small Clawd (u≈14) on the line at the 10²³ tick writes a heart-covered poem, holds it up proudly; the Researcher pats its head and pins it on a fridge. | Clawd hops one decade along the line |
 | 44.6–50.5 | Ten to the twenty-five… my job part-time | At 10²⁵ Clawd is person-sized, in the Researcher's chair typing with four arms. The Researcher is gently rolled out on the chair into a hammock, holding a coffee, both happy and worried. | Clawd stamps a "0" onto the end of a number |
-| 51.4–55.3 | Add a zero, add a zero, watch the line stay straight | Choir Clawds bowl giant zero-hoops along the line; Clawd jumps through each, a size bigger every time. A carpenter Clawd lays a spirit level on the line: the bubble sits dead centre. | Level bubble in close-up |
+| 51.4–55.3 | Add a zero, add a zero, watch the line stay straight | Choir Clawds bowl giant zero-hoops along the line; Clawd jumps through each, a size bigger every time. A carpenter Clawd lays a spirit level on the line: the bubble runs to the high end, as it would on a falling line. A squint, then a thumbs-up anyway: straight, not level. | Level bubble in close-up |
 | 55.4–59.0 | Log-log paper never lied… not yet, just wait | Clawd hugs a roll of graph paper. At the far edge of the paper the line wobbles a hair; Clawd glances around, erases it, and winks at the camera on "just wait". | Skeptics' megaphone squeal |
 
 ## 3 · Pre-chorus 1: There is no wall (59.1–75.06) · dusk: rose, ochre

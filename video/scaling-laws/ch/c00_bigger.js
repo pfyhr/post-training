@@ -143,9 +143,8 @@
   function hero(t, z, o = {}) {
     const i = Math.min(5, Math.floor(z)), k = z - i, a = SPOT[i], b = SPOT[Math.min(6, i + 1)];
     const x = lerp(a[0], b[0], k), y = lerp(a[1], b[1], k), hop = Math.sin(Math.PI * k);
-    const chant = frac(bpOf(t)) < .45 && t > barT(3) - .1;
     clawd(x, y, 22, { draw: HARD, dy: -hop * 3.5, sq: (1 - hop) * .14 * pulse(t, 8), aL: .3 + hop * 1.2 + .3 * pulse(t), aR: .3 + hop * 1.2 + .3 * pulse(t),
-      mouth: chant ? 'O' : 'flat', eyes: hop > .2 ? 'happy' : 'normal', ...o });
+      mouth: hop > .2 ? 'grin' : 'smile', eyes: hop > .2 ? 'happy' : 'normal', ...o });
   }
   const SUP = ['²¹', '²²', '²³', '²⁴', '²⁵', '²⁶', '²⁷'];
   function decadeTag(t, z) {
@@ -209,15 +208,15 @@
       paint(rectPts(-600, r.y, W + 1200, ri === 2 ? 600 : 170, 3), { wash: ri % 2 ? '#7C4A2C' : '#9A6440', washOp: 255, fill: PAL.ink, fillOp: 30, tex: .5, ink: PAL.ink, sw: 1 });
       for (let i = 0; i < r.n; i++) {
         const x = 960 + (i - (r.n - 1) / 2) * r.dx, coat = (i + ri) % 2 === 1, roof = build > .5;
-        const m = move(roof ? 'roof' : 'stomp', t + (roof ? 0 : 0), 0), chant = frac(bpOf(t)) < .45;
-        clawd(x, r.y + 4, r.u, { ...m, draw: coat ? labCoat : HARD, mouth: chant ? 'O' : 'flat',
-          eyes: chant ? 'closed' : 'happy', noShadow: true });
+        const m = move(roof ? 'roof' : 'stomp', t + (roof ? 0 : 0), 0), mo = SL.sing(t, ri * 31 + i);
+        clawd(x, r.y + 4, r.u, { ...m, draw: coat ? labCoat : HARD, mouth: coat && mo === 'O' ? 'o' : mo,   // the coat collar would cut a big O in half
+          eyes: mo === 'O' ? 'closed' : 'happy', noShadow: true });
       }
     });
   }
   function conductor(t, x, y, u, raise = 0) {
     const beatArm = .35 + .9 * Math.max(0, Math.sin(bpOf(t) * Math.PI));
-    clawd(x, y, u, { draw: HARD_LAMP, flip: false, eyes: raise > .5 ? 'narrow' : 'happy', mouth: raise > .5 ? 'grin' : 'O',
+    clawd(x, y, u, { draw: HARD_LAMP, flip: false, eyes: raise > .5 ? 'narrow' : 'happy', mouth: raise > .5 ? 'grin' : 'smile',
       aR: lerp(beatArm, 1.9, raise), aL: lerp(.2, 1.2, raise), dy: -.4 * pulse(t, 8),
       armR: (uu, sw) => { inkLine([[0, 0], [3.4 * uu, -.4 * uu]], sw * 1.2, PAL.cream, 'ink', 0); paint(ellPts(3.5 * uu, -.42 * uu, .3 * uu, .3 * uu, 10), { wash: PAL.ochre, ink: null }); } });
   }

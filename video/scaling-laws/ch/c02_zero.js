@@ -304,7 +304,8 @@
   function hoopShot(t, lt) {
     const bp = bpOf(t), w = .55 + .2 * seg(t, bt(109), bt(118));
     const lyC = t < bt(115) ? lerp(FL3 - 160, FL3 - 11 - LH / 2, easeIn(seg(t, bt(114.6), bt(115)))) : FL3 - 11 - LH / 2;
-    const bub = t < bt(115) ? 0 : 34 * Math.exp(-(t - bt(115)) * 3.2) * Math.cos((t - bt(115)) * 13);
+    // the level lies along a falling line, so the bubble runs to the high (left) end and stays there: straight, not level
+    const ba = Math.max(0, t - bt(115)), bub = t < bt(115) ? 0 : Math.max(-24, -24 * (1 - Math.exp(-ba * 5)) + 5 * Math.exp(-ba * 3.5) * Math.sin(ba * 14));
     const zk = ease(seg(t, bt(116), bt(117.5))), zoom = lerp(1, 5.4, zk) * (1 + .012 * pulse(t, 7));
     const [sx, sy] = shakeXY(t, 2 * pulse(t, 8) * (1 - zk) + 7 * Math.exp(-Math.max(0, t - bt(115)) * 10) * (t > bt(115) ? 1 : 0));
     const ccx = lerp(1000, LX, zk), ccy = lerp(615, lyC, zk);
@@ -333,11 +334,11 @@
       TC.forEach(c => { const a = t - c - .05; if (a > 0 && a < .4) paint(starPts(CX3, FL3 - 6 * u, (60 + 260 * a) , .3, 8, a * 2), { fill: PAL.cream, fillOp: 160 * (1 - a / .4), bleed: .2, ink: null }); });
     }
     if (inside >= 0 && far) { const x = hoopX(inside, t), R = ROut(inside); hoopHalf(x, FL3 - 11 - R, R, -Math.PI / 2, Math.PI / 2, -x / R); }
-    // the carpenter walks in with a spirit level and sets it on the line: dead centre
+    // the carpenter walks in with a spirit level and sets it on the line: the bubble runs uphill, a squint, then a thumbs-up
     if (far) {
       const kx = kf(t, [[bt(112.5), 2050], [bt(114.4), 1480]], x => x), walking = t > bt(112.5) && t < bt(114.4);
-      clawd(kx, FL3, 20, { draw: carpenter, walk: walking ? bp / 2 : undefined, eyes: t > bt(115.2) ? 'happy' : 'narrow', mouth: t > bt(115.4) ? 'grin' : 'flat',
-        aL: t < bt(115) ? .05 : -.4, aR: t > bt(115.6) ? 1.3 + .2 * Math.sin(bp * TAU) : .2, dy: walking ? -.3 * Math.abs(Math.sin(bp * Math.PI)) : 0 });
+      clawd(kx, FL3, 20, { draw: carpenter, walk: walking ? bp / 2 : undefined, eyes: t > bt(115.9) ? 'happy' : 'narrow', mouth: t > bt(116) ? 'grin' : 'flat',
+        aL: t < bt(115) ? .05 : -.4, aR: t > bt(116) ? 1.3 + .2 * Math.sin(bp * TAU) : .2, dy: walking ? -.3 * Math.abs(Math.sin(bp * Math.PI)) : 0 });
     }
     if (t > bt(112.5)) {
       const lx = t < bt(114.4) ? kf(t, [[bt(112.5), 2050], [bt(114.4), 1480]], x => x) - (1480 - LX) : LX;
@@ -346,8 +347,8 @@
     if (t > bt(115) && t < bt(115) + .5 && far) sfx('CLUNK', LX - 120, FL3 - 130, 84, PAL.cream, t - bt(115), { life: .5 });
     const dAge = t - bt(116.4);
     if (dAge > 0) {
-      paint(starPts(LX + 15, lyC - 9, 5 * backOut(dAge * 3), .35, 4, dAge), { wash: PAL.cream, washOp: 255, ink: null });
-      sfx('ding!', LX + 2, lyC - 22, 9, PAL.cream, dAge, { life: 1.2, rot: -.06 });
+      paint(starPts(LX + bub - 3, lyC - 7, 5 * backOut(dAge * 3), .35, 4, dAge), { wash: PAL.cream, washOp: 255, ink: null });
+      sfx('ding!', LX + bub, lyC - 22, 9, PAL.cream, dAge, { life: 1.2, rot: -.06 });
     }
     camEnd();
   }
