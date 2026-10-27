@@ -280,21 +280,30 @@
 
   // ======================= 126.0 – 127.54: the empty wallet, answered by five hundred trucks =======================
   const S3 = 126.0, FLIP = bt(269), HONK = [bt(270), bt(271)], VP = [1290, 560];
+  // a gold dump truck seen nose-on, driving at the camera: bumper, grille and headlights, the cab, the coin heap behind
   function truck(x, y, s, t, bounce) {
     y -= bounce * 10 * s;
     const R = (a, b, w, h, o) => paint(rectPts(x + a * s, y + b * s, w * s, h * s, s > .3 ? 1 : 0), o);
     const ink = s > .25 ? PAL.ink : null, sw = clamp(s * 1.4, .5, 1.4);
-    R(-180, -150, 360, 110, { wash: '#E3A92E', washOp: 255, ink, sw });                                                  // dump bed
-    paint([[x - 175 * s, y - 150 * s], [x - 120 * s, y - 230 * s], [x - 10 * s, y - 250 * s], [x + 110 * s, y - 228 * s], [x + 175 * s, y - 150 * s]],
+    paint(ellPts(x, y, 170 * s, 16 * s, 14), { fill: PAL.ink, fillOp: 90, bleed: .1, ink: null });                       // shadow
+    R(-150, -330, 300, 120, { wash: '#E3A92E', washOp: 255, ink, sw });                                                  // dump bed, wider than the cab
+    paint([[x - 145 * s, y - 330 * s], [x - 95 * s, y - 385 * s], [x, y - 400 * s], [x + 95 * s, y - 385 * s], [x + 145 * s, y - 330 * s]],
       { wash: GOLD, washOp: 255, fill: PAL.ochre, fillOp: 80, tex: .4, ink, sw, curv: .5 });                            // heap of coins
-    if (s > .3) for (let i = 0; i < 9; i++) { const cx = x + (-130 + 260 * hash(i * 3.3)) * s, cy = y - (165 + 60 * hash(i * 9.1)) * s;
-      paint(ellPts(cx, cy, 14 * s, 9 * s, 10), { wash: GOLD_LT, washOp: 255, ink: PAL.clayDk, sw: .5 }); }
-    R(-300, -170, 120, 130, { wash: PAL.clay, washOp: 255, ink, sw });                                                    // cab
-    R(-285, -155, 70, 50, { wash: PAL.sky, washOp: 230, ink: s > .25 ? PAL.ink : null, sw: sw * .7 });
-    R(-310, -50, 500, 30, { wash: '#3B3550', washOp: 255, ink: null });
-    for (const wx of [-240, 60, 130]) { paint(ellPts(x + wx * s, y - 18 * s, 34 * s, 34 * s, 14), { wash: PAL.ink, washOp: 255, ink: null });
-      if (s > .3) paint(ellPts(x + wx * s, y - 18 * s, 13 * s, 13 * s, 10), { wash: SL.STEEL, washOp: 255, ink: null }); }
+    if (s > .3) for (let i = 0; i < 7; i++) paint(ellPts(x + (-110 + 220 * hash(i * 3.3)) * s, y - (340 + 40 * hash(i * 9.1)) * s, 14 * s, 9 * s, 10), { wash: GOLD_LT, washOp: 255, ink: PAL.clayDk, sw: .5 });
+    for (const wx of [-1, 1]) R(wx * 118 - 22, -50, 44, 50, { wash: PAL.ink, washOp: 255, ink: null });                   // tyres
+    R(-120, -250, 240, 210, { wash: PAL.clay, washOp: 255, fill: PAL.clayDk, fillOp: 40, tex: .4, ink, sw });            // cab
+    R(-100, -235, 200, 70, { wash: PAL.sky, washOp: 230, ink, sw: sw * .7 });                                            // windscreen
+    R(-60, -150, 120, 80, { wash: SL.STEEL, washOp: 255, ink, sw: sw * .7 });                                            // grille
+    if (s > .3) for (let i = 1; i < 4; i++) R(-55, -150 + i * 20, 110, 4, { wash: SL.STEEL_DK, washOp: 255, ink: null });
+    for (const wx of [-1, 1]) {                                                                                          // headlights
+      paint(ellPts(x + wx * 92 * s, y - 108 * s, 20 * s, 20 * s, 12), { wash: PAL.cream, washOp: 255, ink, sw: sw * .6 });
+      paint(ellPts(x + wx * 92 * s, y - 108 * s, 60 * s, 46 * s, 14), { fill: GOLD_LT, fillOp: 70, bleed: .3, ink: null });
+    }
+    R(-135, -62, 270, 26, { wash: '#3B3550', washOp: 255, ink, sw: sw * .7 });                                           // bumper
   }
+  // trucks roll down the road toward the camera and blow past it on the right; d = distance along the road
+  const NT = 34, GAP = 1, SPEED = 5.5;
+  const truckD = (j, t) => j * GAP + 1.2 - SPEED * (t - S3);
   function money(t, lt) {
     const out = ease(seg(t, HONK[0] - .12, HONK[0] + .3));
     const zoom = lerp(1.75, 1.0, out) * (1 + .015 * pulse(t, 7)), [sx, sy] = shakeXY(t, 2 + 4 * out * pulse(t, 6));
@@ -306,11 +315,15 @@
       paint([[lerp(VP[0], 1500, k0) - 6 * k0, lerp(VP[1], 1300, k0)], [lerp(VP[0], 1500, k0) + 6 * k0, lerp(VP[1], 1300, k0)], [lerp(VP[0], 1500, k1) + 6 * k1, lerp(VP[1], 1300, k1)], [lerp(VP[0], 1500, k1) - 6 * k1, lerp(VP[1], 1300, k1)]], { wash: PAL.cream, washOp: 200, ink: null }); }
     // the line of trucks, far to near
     const hk = HONK.reduce((a, h) => t >= h ? Math.max(a, Math.exp(-(t - h) * 7)) : a, 0);
-    for (let j = 44; j >= 0; j--) {
-      const s = 1 / (1 + j * .45), x = lerp(VP[0], 1560, s), y = lerp(VP[1], 960, s);
+    for (let j = NT - 1; j >= 0; j--) {
+      const d = truckD(j, t); if (d < -1.45) continue;                                                                  // gone past the camera
+      const s = 1 / (1 + d * .45), x = lerp(VP[0], 1450, s), y = lerp(VP[1], 960, s);
       if (s < .06) { paint(rectPts(x - 3, y - 4, 7, 4, 0), { wash: GOLD, washOp: 255, ink: null }); continue; }
-      truck(x, y, s * .95, t, hk * Math.sin(Math.PI * clamp((t - HONK[0]) * 8 - j * .08)) * 0 + hk * (1 - j / 45));
-      if (hk > .2 && s > .15) for (let r = 0; r < 3; r++) inkLine([[x - 320 * s - (14 + r * 14) * s, y - 150 * s - r * 18 * s], [x - 320 * s - (40 + r * 22) * s, y - 170 * s - r * 30 * s]], 2.4 * s + .6, PAL.cream, 'ink', 0);
+      truck(x, y, s * .95, t, hk * (1 - j / NT));
+      if (d < .6) for (let r = 0; r < 4; r++) { const sx0 = x + (r % 2 ? 1 : -1) * (190 + 40 * r) * s, sy0 = y - (60 + 70 * r) * s;   // speed lines as it passes
+        const ex = lerp(sx0, VP[0], .25), ey = lerp(sy0, VP[1], .25), w = 3 * s;
+        paint([[sx0, sy0 - w], [ex, ey - w * .3], [ex, ey + w * .3], [sx0, sy0 + w]], { fill: PAL.cream, fillOp: 140, bleed: .1, ink: null }); }
+      if (hk > .2 && s > .15) for (let r = 0; r < 3; r++) inkLine([[x - (150 + r * 16) * s, y - (270 + r * 22) * s], [x - (180 + r * 26) * s, y - (300 + r * 34) * s]], 2.4 * s + .6, PAL.cream, 'ink', 0);
     }
     // the Skeptic and the wallet, in the foreground
     const flip = ease(seg(t, FLIP - .15, FLIP + .12));

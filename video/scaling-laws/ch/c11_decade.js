@@ -262,7 +262,7 @@
   }
 
   // ---------------- Clawd rides the line the whole way, the same size on screen ----------------
-  const D_CLAWD = -380;
+  const D_CLAWD = -380, PTIP = 160;                       // PTIP: how far ahead of Clawd's feet the pencil touches the line
   function hero(t, z) {
     const m = mood(t, [[0, 'happy'], [229.95, 'look'], [231.3, 'scared', '!'], [232.25, 'spark'], [232.7, 'look'], [233.85, 'wink', 'spark']]);
     let d = D_CLAWD, o = {}, rot = A;
@@ -280,18 +280,23 @@
       o = { aL: teeter ? 1.2 + .7 * Math.sin(t * 22) : .5, aR: teeter ? 1.2 - .7 * Math.sin(t * 22) : .5, mouth: teeter ? 'O' : 'grin', lookX: 1, lookY: .6 };
       rot = A + teeter * .14 * Math.sin(t * 9);
     } else {
-      d = t < 233.85 ? extTip(t) - 34 : 540 - 34;
+      d = t < 233.85 ? extTip(t) - PTIP : 540 - PTIP;
       const drawing = t < 233.85;
       o = { walk: drawing && t < 233.75 ? t * 3 : null, aR: drawing ? -.35 : 1.3 + .2 * pulse(t, 8), aL: drawing ? .3 : .4, lookX: drawing ? 1 : 0, lookY: drawing ? .5 : 0,
-        mouth: drawing ? 'cat' : 'grin', dy: drawing ? 0 : -1.2 * Math.abs(Math.sin(bpOf(t) * Math.PI)),
-        armR: drawing ? (u, sw) => {                     // a big pencil, point down onto the paper
-          paint(rectPts(.2 * u, -.45 * u, 3.4 * u, .9 * u, u * .03), { wash: PAL.ochre, washOp: 255, ink: PAL.ink, sw: sw * .7 });
-          paint([[3.6 * u, -.45 * u], [4.6 * u, 0], [3.6 * u, .45 * u]], { wash: '#F2D2A8', washOp: 255, ink: PAL.ink, sw: sw * .6 });
-          paint([[4.3 * u, -.15 * u], [4.62 * u, 0], [4.3 * u, .15 * u]], { wash: PAL.ink, washOp: 255, ink: null });
-          paint(rectPts(-.1 * u, -.45 * u, .4 * u, .9 * u), { wash: PAL.rose, washOp: 255, ink: PAL.ink, sw: sw * .6 }); } : null };
+        mouth: drawing ? 'cat' : 'grin', dy: drawing ? 0 : -1.2 * Math.abs(Math.sin(bpOf(t) * Math.PI)) };
     }
     const [x, y] = on(d);
     clawd(x, y, 20, { draw: HARD, noShadow: true, rot, ...m, ...o });
+    if (t > 232.75 && t < 233.85) {                         // a big pencil from the hand down to the tip of the new line
+      const u = 20, aR = o.aR, hl = [(4.9 + 2.2 * Math.cos(aR)) * u, (-4.5 - 2.2 * Math.sin(aR)) * u];
+      const h = [x + hl[0] * CA - hl[1] * SA, y + hl[0] * SA + hl[1] * CA], tp = on(extTip(t));
+      const dx = tp[0] - h[0], dy = tp[1] - h[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, px = -uy, py = ux;
+      const P = (a, b) => [tp[0] - ux * a + px * b, tp[1] - uy * a + py * b], len = L + 40, hw = 9;
+      paint([P(len, -hw), P(22, -hw), P(22, hw), P(len, hw)], { wash: PAL.ochre, washOp: 255, ink: PAL.ink, sw: .7 });
+      paint([P(len + 12, -hw), P(len, -hw), P(len, hw), P(len + 12, hw)], { wash: PAL.rose, washOp: 255, ink: PAL.ink, sw: .6 });
+      paint([P(22, -hw), P(0, 0), P(22, hw)], { wash: '#F2D2A8', washOp: 255, ink: PAL.ink, sw: .6 });
+      paint([P(7, -3), P(0, 0), P(7, 3)], { wash: PAL.ink, washOp: 255, ink: null });
+    }
   }
 
   // a Powers-of-Ten scale tag, in metres

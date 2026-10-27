@@ -95,31 +95,26 @@
   const bump = t => t < T4 ? pulse(t, 7) : 0;
 
   // ---------------- 59.1: "They said we'd hit a wall" / "(there is no wall)" ----------------
-  // The wall is a painted sheet; the choir shouts, it ripples like cloth, flies off and lands draped over the Skeptics.
-  const SK1 = [420, 650, 880], OFF_T = barT(34), LAND = bt(133);          // 61.94 lift-off, 62.40 lands
-  const lumpH = (x, t) => { let h = 14; SK1.forEach((sx, i) => { const d = (x - sx) / 128; h = Math.max(h, (225 + 10 * Math.sin(t * 11 + i * 2)) * Math.exp(-d * d * d * d) + 60 * Math.exp(-d * d * .3)); }); return h; };
-  function clothPt(u, v, t) {
-    const amp = 18 * ease(seg(t, 61.05, 61.85)) * (1 + .6 * pulse(t, 6));
-    const ux = lerp(1080, 1400, u) + amp * Math.sin(v * 9 - t * 15 + u * 3) * v, uy = 822 - v * 640 + amp * .3 * Math.sin(u * 7 - t * 13);
-    const dx = lerp(320, 990, u), dy = 824 - v * lumpH(dx, t);
-    const k = seg(t, OFF_T, LAND), m = ease(k), air = Math.sin(Math.PI * k);
-    return [lerp(ux, dx, m) - air * 60 * v, lerp(uy, dy, m) - air * (200 + 140 * v) + air * 46 * Math.sin(u * 6 - t * 20 + v * 4)];
+  // The wall rocks on the choir's shouts, then topples over stiff as a board and lands flat on the Skeptics.
+  const SK1 = [420, 650, 880], OFF_T = barT(34), LAND = bt(133);          // 61.94 starts to tip, 62.40 lands
+  const WX = 1080, WW = 320, WH = 640, GY = 822;                            // pivot: the wall's bottom-left corner
+  function wallAngle(t) {
+    const rock = .03 * ease(seg(t, 61.05, 61.6)) * Math.sin((t - 61.05) * 15) * (1 - seg(t, OFF_T - .2, OFF_T));
+    if (t < OFF_T) return rock;
+    if (t < LAND) { const k = seg(t, OFF_T, LAND); return -Math.PI / 2 * (.04 + .96 * k * k); }   // falls like a slab: slow start, fast end
+    const age = t - LAND; return -Math.PI / 2 + .06 * Math.exp(-age * 8) * Math.abs(Math.sin(age * 20));   // one small bounce
   }
-  function cloth(t) {
-    const edge = [], N = 14;
-    for (let i = 0; i <= N; i++) edge.push(clothPt(i / N, 0, t));
-    for (let i = 1; i <= N; i++) edge.push(clothPt(1, i / N, t));
-    for (let i = N - 1; i >= 0; i--) edge.push(clothPt(i / N, 1, t));
-    for (let i = N - 1; i > 0; i--) edge.push(clothPt(0, i / N, t));
-    paint(edge, { wash: '#8C5446', washOp: 255, ink: null, curv: .5 });                                                  // mortar
-    const R = 13, C = 4;
+  function brickWall(t) {
+    const a = wallAngle(t), R = 13, C = 4, bh = WH / R, bw = WW / C;
+    push(); translate(a > 0 ? WX + WW : WX, GY); rotate(a); if (a > 0) translate(-WW, 0);   // rocks on whichever corner it leans onto
+    paint(rectPts(0, -WH, WW, WH, 1), { wash: '#8C5446', washOp: 255, ink: null });                                        // mortar
     for (let r = 0; r < R; r++) for (let c = -1; c < C; c++) {
-      const off = r % 2 ? .5 : 0, u0 = clamp((c + off) / C + .012), u1 = clamp((c + off + 1) / C - .012), v0 = r / R + .012, v1 = (r + 1) / R - .012;
-      if (u1 - u0 < .02) continue;
-      paint([clothPt(u0, v0, t), clothPt(u1, v0, t), clothPt(u1, v1, t), clothPt(u0, v1, t)],
-        { wash: mixCol('#B5553A', '#D27A52', hash(r * 7 + c)), washOp: 255, ink: null });
+      const x0 = Math.max(0, (c + (r % 2 ? .5 : 0)) * bw + 3), x1 = Math.min(WW, (c + (r % 2 ? .5 : 0) + 1) * bw - 3);
+      if (x1 - x0 < 6) continue;
+      paint(rectPts(x0, -WH + r * bh + 3, x1 - x0, bh - 6, 1), { wash: mixCol('#B5553A', '#D27A52', hash(r * 7 + c)), washOp: 255, ink: null });
     }
-    paint(edge, { fill: PAL.violet, fillOp: 40, bleed: .1, tex: .6, ink: PAL.ink, sw: 1.3, curv: .5 });
+    paint(rectPts(0, -WH, WW, WH, 1), { fill: PAL.violet, fillOp: 40, bleed: .1, tex: .6, ink: PAL.ink, sw: 1.3 });
+    pop();
   }
   function noWall(t, lt) {
     const [sx, sy] = shakeXY(t, 2 * bump(t) + 6 * seg(t, LAND, LAND + .05) * (1 - seg(t, LAND + .05, LAND + .3)));
@@ -139,16 +134,16 @@
     }
     // the Skeptics: blaring at the wall, then flinching as the sheet comes for them
     const k = seg(t, OFF_T, LAND);
-    if (k < .82) [...SK1].reverse().forEach((x, j) => {                                     // right to left, so every megaphone is in front
+    if (t < LAND) [...SK1].reverse().forEach((x, j) => {                                     // right to left, so every megaphone is in front
       const i = 2 - j, flinch = ease(seg(t, OFF_T + .05, OFF_T + .3)), say = t < 60.9 && frac(bpOf(t)) < .55;
       skeptic(x, 826, 19, { blare: t < 60.95 ? 1 - frac(bpOf(t) + i * .1) : 0, mouth: say ? 'O' : 'flat',
         eyes: flinch > .3 ? 'scared' : 'narrow', lookY: -1, aR: lerp(.62 + .1 * bump(t), -.9, flinch), aL: lerp(-.4, 1.2, flinch),
         sq: .1 * bump(t), emote: flinch > .3 && i === 1 ? '!' : null, emoteK: flinch });
     });
-    cloth(t);
+    brickWall(t);
     if (t > LAND) {                                                                            // muffled, poking out from under
       const age = t - LAND;
-      push(); translate(1000 + 40 * ease(seg(age, .05, .25)), 800); rotate(-.15); megaphone(frac(bpOf(t)) < .5 ? .5 : 0)(15, 1.1); pop();
+      push(); translate(WX - WH - 10 - 60 * ease(seg(age, .05, .25)), 806); rotate(PI + .12); megaphone(frac(bpOf(t)) < .5 ? .5 : 0)(15, 1.1); pop();
       for (let i = 0; i < 6; i++) { const a = age * 2.5; paint(ellPts(380 + i * 130, 812 - a * 60, 40 + a * 120, 16 + a * 30, 14, 3), { fill: soft(SAND, .2), fillOp: 140 * (1 - seg(age, 0, .35)), bleed: .3, ink: null }); }
       sfx('FWUMP', 700, 500, 96, PAL.cream, age, { life: .5, rot: -.06 });
     }

@@ -88,7 +88,7 @@ Track 07 of *Post-Training*. 237.2 s, 128.04 BPM, F minor. First downbeat 0.08 s
 | Time | Lyric | Shot | Out |
 |---|---|---|---|
 | 119.2–126.0 | wall… data's gone… | Same gags, bigger: the Skeptics bring three walls stacked; the line goes through all three like a skewer. Data: a factory belt of Clawds stamping books, and books rain on the Skeptics. | — |
-| 126.0–127.54 | money's dry… | Empty wallet again, but this time five hundred trucks honk in a line to the horizon. | Kick drops |
+| 126.0–127.54 | money's dry… | Empty wallet again, but this time five hundred trucks come honking down the road from the horizon and blow past the camera. | Kick drops |
 | 127.54–135.04 | (five hundred bil') They said we'd hit a wall… | Breakdown build: the wall is now a dam the size of a mountain. The choir climbs onto the lead Clawd's shoulders in a tower. The camera rises with the riser. | **SMASH** at 135.04: the line goes through the dam, which releases a flood of gold light |
 
 ## 7 · Chorus 2: Gigawatt (135.04–157.53) · festival, brighter: neon on gold
@@ -134,7 +134,7 @@ Track 07 of *Post-Training*. 237.2 s, 128.04 BPM, F minor. First downbeat 0.08 s
 |---|---|---|---|
 | 219.4–227.0 | (Bigger ×4) | Final Powers of Ten zoom-out, slower and grander: planet → solar system → galaxy, the line still dead straight. | — |
 | 227.0–232.5 | (Bigger ×4) | The galaxy shrinks to a dot on a sheet of log-log paper on the Researcher's desk. It's the cover painting. The line runs off the edge of the paper. | — |
-| 232.5–234.38 | — | The Researcher sighs, tears off a new sheet, and tapes it to the edge. Clawd extends the line onto it with a ruler and smiles at camera. | — |
+| 232.5–234.38 | — | The Researcher sighs, tears off a new sheet, and tapes it to the edge. Clawd walks the ruler, inking the line onto it with a big pencil, and smiles at camera. | — |
 | 234.38–241.2 | — (tail, then 4 s of silence) | Desk lamp clicks off. End card: title, track credits, "video pipeline: John Heibel / PDoomVideo" with its GitHub and YouTube links (required by CREDITS.md), and our repo, github.com/pfyhr/post-training. It holds 4 s past the end of the song. | — |
 
 ---
