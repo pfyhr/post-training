@@ -116,7 +116,8 @@
   const conTop = onLine(-1700), conLow = onLine(-128);      // the inked line: from off the top-left down to just short of the ruler
   // gather 0..1 pulls the stars onto the line; draw 0..1 inks the line downhill between them; glow 0..1 turns it clay
   function constellation(t, gather, draw, glow, o = {}) {
-    const pts = CON.map((c, i) => { const k = ease(clamp((gather - c.at / 3) * 3)); return [lerp(c.sx, c.tx, k), lerp(c.sy, c.ty, k), c.r, k]; });
+    // stagger so even the last star (at 2.42) lands on the line by gather = 1
+    const pts = CON.map((c, i) => { const k = ease(clamp((gather - c.at * .8 / 3) * 3)); return [lerp(c.sx, c.tx, k), lerp(c.sy, c.ty, k), c.r, k]; });
     if (draw > 0) {
       const lo = o.ruler ? conLow : [CON[0].tx, CON[0].ty];   // down to the ruler while he holds it, else to the lowest star
       const a = conTop, b = [lerp(a[0], lo[0], draw), lerp(a[1], lo[1], draw)];
