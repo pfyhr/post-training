@@ -226,21 +226,21 @@
     }
     hammockBack(0);
 
-    // Researcher: on a rolling chair, pushed gently away, tipped into the hammock with a coffee
+    // Researcher: on a rolling chair, pushed gently away, tipped into the hammock with a coffee he keeps level the whole way
     const s = 24, chairX = kf(t, [[bt(97), 930], [bt(100.5), 780]]), seatY = FL2 - 100;
     const tip = seg(t, bt(100.5), bt(101.6)), te = ease(tip), swing = tip >= 1 ? 10 * Math.sin((t - bt(101.6)) * 2.4) : 0;
     officeChair(chairX, seatY, s);
     if (tip < 1) {
       const rxp = lerp(chairX, 580, te), ryp = lerp(seatY + 2.3 * s, 628, te) - Math.sin(Math.PI * te) * 110;
       researcher(rxp, ryp, s, { sit: tip < .3, rot: -1.45 * te, eyes: t < bt(97) ? 'wide' : tip > 0 ? 'wide' : 'dot', brows: t >= bt(97) ? 'worried' : 'up',
-        mouth: tip > 0 ? 'O' : 'smile', aL: -.9 + 1.6 * te, aR: .1, handR: mug, noShadow: tip > 0, hairUp: Math.sin(Math.PI * te) });
+        mouth: tip > 0 ? 'O' : 'smile', aL: -.9 + 1.6 * te, aR: .1, handR: (ss, sw) => { push(); rotate(.1 + 1.45 * te); mug(ss, sw); pop(); }, noShadow: tip > 0, hairUp: Math.sin(Math.PI * te) });
     }
     chairSeat(chairX, seatY, s);
     if (tip >= 1) {
       hammockBack(swing);
       const sip = Math.exp(-Math.abs(bp - 104) * 3) + Math.exp(-Math.abs(bp - 107.5) * 3);
       researcher(580 + swing, 628, s, { rot: -1.45, eyes: 'closed', brows: 'worried', mouth: sip > .3 ? 'o' : 'smile', aR: .55 + .5 * sip, aL: -.4, noShadow: true,
-        handR: (ss, sw) => { push(); rotate(1.45 - .55 - .5 * sip); mug(ss, sw); pop(); },
+        handR: (ss, sw) => { push(); rotate(1.45 + .55 + .5 * sip); mug(ss, sw); pop(); },   // undo body and arm turn: the mug stays level
         emote: 'sweat', emoteK: seg(t, bt(102), bt(102.5)) });
       hammockFront(swing);
     }
