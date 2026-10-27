@@ -42,7 +42,7 @@ Track 07 of *Post-Training*. 237.2 s, 128.04 BPM, F minor. First downbeat 0.08 s
 | Time | Lyric | Shot | Out |
 |---|---|---|---|
 | 30.07–33.8 | — | The kick lands. The choir stomps in unison, dust jumps off the risers, and a giant log-log chart drops behind them like a stage backdrop with the line drawn across it. | Whip pan |
-| 33.8–37.57 | — | Lead Clawd at a desk-sized chalkboard sharpens a ruler-long pencil on the beat, then rules the line from corner to corner in one stroke. | Push into the paper |
+| 33.8–37.57 | — | Lead Clawd at a desk-sized chalkboard sharpens a ruler-long pencil on the beat, then rules the line along the top edge of the ruler from corner to corner in one stroke. | Push into the paper |
 
 ## 2 · Verse 1: Add a zero (37.57–59.1) · lab, warming to amber
 

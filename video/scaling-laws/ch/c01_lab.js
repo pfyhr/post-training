@@ -138,6 +138,7 @@
   const DX = B[0] - A[0], DY = B[1] - A[1], LEN = Math.hypot(DX, DY), D = [DX / LEN, DY / LEN], N = [D[1], -D[0]], ANG = Math.atan2(DY, DX);
   const at = (s, up = 0) => [A[0] + D[0] * s + N[0] * up, A[1] + D[1] * s + N[1] * up];   // point on the line, `up` px above it
   const RW = 54, RB = 11, U = 24, PEN = 15 * U, TIPX = 6 * U;           // ruler width, hero unit, pencil length, pencil tip ahead of the feet
+  const FT = -4, RBOT = FT - (RW - RB);                        // the ruler lies under the line: its top edge (where Clawd stands) is the line
   const GROUND = 880, X0 = 166;                                // where Clawd stands to sharpen
   const S0 = -TIPX, S1 = LEN - TIPX;                           // feet travel along the ruler while the tip runs A..B
   const GRIND0 = bt(77), GRIND1 = bt(78), PUSH0 = bt(78.5);
@@ -174,11 +175,11 @@
     ['²¹', '²²', '²³', '²⁴', '²⁵'].forEach((s, i) => letter('10' + s, P.x + 20 + i * (P.w - 40) / 4 + (i === 0 ? 26 : i === 4 ? -26 : 0), P.y + P.h + 4, 30, mixCol(PAL.teal, PAL.ink, .5), { ink: false }));
   }
   function ruler() {
-    const s0 = -150, s1 = LEN + 130, a = at(s0, RB), b = at(s1, RB), c = at(s1, RW), d = at(s0, RW);
-    paint([at(s0 - 6, RB - 9), at(s1 + 6, RB - 9), at(s1 + 6, RW - 4), at(s0 - 6, RW - 4)], { fill: PAL.ink, fillOp: 90, bleed: .1, ink: null });
+    const s0 = -150, s1 = LEN + 130, a = at(s0, RBOT), b = at(s1, RBOT), c = at(s1, FT), d = at(s0, FT);
+    paint([at(s0 - 6, RBOT - 9), at(s1 + 6, RBOT - 9), at(s1 + 6, FT - 4), at(s0 - 6, FT - 4)], { fill: PAL.ink, fillOp: 90, bleed: .1, ink: null });
     paint([a, b, c, d], { wash: '#E9C27A', washOp: 255, fill: PAL.ochre, fillOp: 50, tex: .5, ink: PAL.ink, sw: 1 });
     for (let s = s0 + 20, i = 0; s < s1 - 10; s += 26, i++) {     // tick marks as thin filled slivers (they get pushed into)
-      const l = i % 5 === 0 ? 18 : 9, p = at(s, RW - 2), q = at(s, RW - 2 - l), e = 1.2;
+      const l = i % 5 === 0 ? 18 : 9, p = at(s, FT - 2), q = at(s, FT - 2 - l), e = 1.2;
       paint([[p[0] - D[0] * e, p[1] - D[1] * e], [p[0] + D[0] * e, p[1] + D[1] * e], [q[0] + D[0] * e, q[1] + D[1] * e], [q[0] - D[0] * e, q[1] - D[1] * e]], { wash: '#6A4128', washOp: 230, ink: null });
     }
   }
@@ -221,7 +222,7 @@
   const handAt = aR => [(4.9 + 2.2 * Math.cos(aR)) * U, (-4.5 - 2.2 * Math.sin(aR)) * U];
   // pencil poses in Clawd's own frame: angle and grip (px from the eraser to the hand)
   const SHARP = { aR: 0, th: 0, g: 4.2 * U }, RAISED = { aR: 1.3, th: -1.25, g: 5 * U };
-  const GRIND = (() => { const aR = -.25, [hx, hy] = handAt(aR), vx = TIPX - hx, vy = RW - hy; return { aR, th: Math.atan2(vy, vx), g: PEN - Math.hypot(vx, vy) }; })();
+  const GRIND = (() => { const aR = -.25, [hx, hy] = handAt(aR), vx = TIPX - hx, vy = FT - hy; return { aR, th: Math.atan2(vy, vx), g: PEN - Math.hypot(vx, vy) }; })();
   const mixPose = (p, q, k) => ({ aR: lerp(p.aR, q.aR, k), th: lerp(p.th, q.th, k), g: lerp(p.g, q.g, k) });
 
   function hero(t) {
@@ -236,13 +237,13 @@
       pen = j > 0 ? mixPose(RAISED, GRIND, ease(seg(j, .35, .9))) : mixPose(SHARP, RAISED, backOut(k));
       insert = -40 * ease(k); aL = lerp(.3, 1.1, ease(k));
       if (j > 0) {                                             // front flip from the floor onto the end of the ruler
-        const [px, py] = at(S0, RW), e = ease(j);
+        const [px, py] = at(S0, FT), e = ease(j);
         x = lerp(X0, px, e); y = lerp(GROUND, py, e) - 170 * Math.sin(Math.PI * j);
         rot = lerp(0, ANG, e) + TAU * ease(seg(j, .1, .85)); sq = -.12 * Math.sin(Math.PI * j);
       } else sq = .12 * Math.exp(-seg(t, bt(75.9), bt(76)) * 4) * (t > bt(75.9) ? 1 : 0);
     } else {
       const g = seg(t, GRIND0, GRIND1), s = lerp(S0, S1, ease(g));
-      [x, y] = at(s, RW); rot = ANG; pen = GRIND;
+      [x, y] = at(s, FT); rot = ANG; pen = GRIND;
       if (t >= GRIND1) { const age = t - GRIND1; sq = .2 * Math.exp(-age * 9) - .08 * pulse(t, 8); aL = lerp(.3, 1.5, backOut(seg(age, 0, .25))); }
       else { sq = -.06; aL = -.6; }
     }
@@ -278,7 +279,7 @@
     sharpener(t);
     if (t < GRIND0 && t >= bt(72)) shavings(t);
     if (t > GRIND0 && t < GRIND1) {                            // speed lines behind Clawd as it grinds down the ruler
-      const p = at(lerp(S0, S1, ease(seg(t, GRIND0, GRIND1))), RW + 90);
+      const p = at(lerp(S0, S1, ease(seg(t, GRIND0, GRIND1))), FT + 90);
       for (let i = 0; i < 4; i++) { const a = [p[0] - D[0] * (60 + i * 18) + N[0] * (i * 28 - 40), p[1] - D[1] * (60 + i * 18) + N[1] * (i * 28 - 40)];
         band(a, [a[0] - D[0] * 220, a[1] - D[1] * 220], 3, { fill: PAL.cream, fillOp: 150, bleed: .1, ink: null }); }
     }
