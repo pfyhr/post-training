@@ -1,5 +1,7 @@
 # Post-Training
 
+▶ **Music video: [Scaling Laws on YouTube](https://www.youtube.com/watch?v=TGXB14GwXeE)**
+
 A fan album in the style of **Claude-Pop**. One Claude-Pop track exists: deckard's *I'm Upping My P(doom)*, which took osmarks' 2024 lyrics and made a banger out of them, and which John Heibel turned into a painted music video. This repo is an attempt at the rest of the record, made by fans, with those three credited everywhere it goes. See [CREDITS.md](CREDITS.md) before sharing anything from here.
 
 The rule the single set, and every new track follows: a real pop song in a real genre, sung from inside the AI moment, where nearly every line is a reference someone on the timeline will catch. Sincere feelings, ridiculous vocabulary.
